@@ -88,3 +88,50 @@ body { background: linear-gradient(160deg, #fdf6ee 0%, #f9eedc 50%, #f5e6cc 100%
   .dashboard-container { padding: 1rem; }
   .data-table th, .data-table td { padding: 0.75rem 1rem; font-size: 0.85rem; }
 }
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  animation: modalScale 0.3s ease-out;
+}
+
+.modal-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.modal-content h2 {
+  color: #3b0764;
+  margin-bottom: 1rem;
+  font-family: 'Playfair Display', serif;
+}
+
+.modal-content p {
+  color: #6b21a8;
+  line-height: 1.6;
+}
+
+@keyframes modalScale {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
