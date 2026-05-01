@@ -80,3 +80,11 @@ body { background: linear-gradient(160deg, #fdf6ee 0%, #f9eedc 50%, #f5e6cc 100%
 .form-group input:focus { border-color: #9333ea; box-shadow: 0 0 0 2px rgba(147,51,234,0.1); }
 .login-btn { width: 100%; justify-content: center; padding: 0.8rem; font-weight: 600; margin-top: 0.5rem; }
 .login-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+@media (max-width: 768px) {
+  .dashboard-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .dashboard-actions { flex-wrap: wrap; width: 100%; }
+  .dashboard-title { font-size: 1.5rem; }
+  .dashboard-container { padding: 1rem; }
+  .data-table th, .data-table td { padding: 0.75rem 1rem; font-size: 0.85rem; }
+}
