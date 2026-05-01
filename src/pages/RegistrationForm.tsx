@@ -228,7 +228,7 @@ const RegistrationForm = () => {
           <button type="button" className="clear-link" onClick={handleClear}>Clear form</button>
         </div>
 
-        <div className="footer-om">🕉</div>
+        <div className="footer-om" style={{ fontSize: '0.9rem', fontWeight: 500 }}>© 2026 All rights reserved, BACE Delhi</div>
       </form>
     </>
   );
