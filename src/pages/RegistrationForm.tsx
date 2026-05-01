@@ -92,8 +92,15 @@ const RegistrationForm = () => {
       <form className="form-body" onSubmit={handleSubmit}>
         
         {success && (
-          <div className="message-box message-success" style={{ marginTop: '2rem' }}>
-            🙏 Thank you! Your registration has been submitted successfully. Hare Krishna!
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <div className="modal-icon">✅</div>
+              <h2>Submission Successful!</h2>
+              <p>Thank you! Your registration has been submitted successfully. Hare Krishna!</p>
+              <button type="button" className="btn-primary" onClick={() => { setSuccess(false); handleClear(); }} style={{ width: '100%', marginTop: '1.5rem', justifyContent: 'center' }}>
+                Close
+              </button>
+            </div>
           </div>
         )}
         
