@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import bannerImg from '../assets/DN_TIDC.png';
+import { Plus, Minus } from 'lucide-react';
 
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
@@ -11,10 +12,9 @@ const RegistrationForm = () => {
     dob: '',
     city_state: '',
     base_name: '',
-    category: '',
+    categories: [''],
     participation_type: '',
     participated_before: '',
-    participated_last_year: '',
     winner_last_year: '',
     categories_won: [] as string[]
   });
@@ -39,6 +39,25 @@ const RegistrationForm = () => {
     }
   };
 
+  const handleCategoryChange = (index: number, value: string) => {
+    const newCategories = [...formData.categories];
+    newCategories[index] = value;
+    setFormData(prev => ({ ...prev, categories: newCategories }));
+  };
+
+  const addCategory = () => {
+    if (formData.categories.length < 3) {
+      setFormData(prev => ({ ...prev, categories: [...prev.categories, ''] }));
+    }
+  };
+
+  const removeCategory = (index: number) => {
+    if (formData.categories.length > 1) {
+      const newCategories = formData.categories.filter((_, i) => i !== index);
+      setFormData(prev => ({ ...prev, categories: newCategories }));
+    }
+  };
+
   const handleClear = () => {
     setFormData({
       full_name: '',
@@ -48,10 +67,9 @@ const RegistrationForm = () => {
       dob: '',
       city_state: '',
       base_name: '',
-      category: '',
+      categories: [''],
       participation_type: '',
       participated_before: '',
-      participated_last_year: '',
       winner_last_year: '',
       categories_won: []
     });
@@ -61,14 +79,32 @@ const RegistrationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (formData.categories.some(cat => !cat)) {
+      setError('Please select all categories or remove the empty ones.');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setSuccess(false);
 
     try {
+      // Prepare data for Supabase
+      // We'll join multiple categories into a single string for the 'category' column
+      const submissionData = {
+        ...formData,
+        category: formData.categories.join(', '),
+        // We removed participated_last_year from UI, so we can set it based on participated_before
+        participated_last_year: (formData.participated_before === 'one' || formData.participated_before === 'two') ? 'yes' : 'no'
+      };
+      
+      // Remove the local 'categories' array before sending to DB
+      const { categories, ...dataToInsert } = submissionData;
+
       const { error: dbError } = await supabase
         .from('tidc_registrations')
-        .insert([formData]);
+        .insert([dataToInsert]);
 
       if (dbError) throw dbError;
       
@@ -82,6 +118,11 @@ const RegistrationForm = () => {
       setLoading(false);
     }
   };
+
+  const categoryOptions = [
+    'Dance', 'Bhajan', 'Speech', 'Sloka Recitation', 'Instrument Playing',
+    'Acting', 'Poem', 'Story Telling', 'Painting', 'Video Making'
+  ];
 
   return (
     <>
@@ -161,14 +202,43 @@ const RegistrationForm = () => {
         </div>
 
         <div className="field-card">
-          <div className="field-label">Category <span className="required-dot"></span></div>
-          <select className="field-select" name="category" value={formData.category} onChange={handleInputChange} required>
-            <option value="" disabled>Choose your category</option>
-            <option>Dance</option><option>Bhajan</option><option>Speech</option>
-            <option>Sloka Recitation</option><option>Instrument Playing</option>
-            <option>Acting</option><option>Poem</option><option>Story Telling</option>
-            <option>Painting</option><option>Video Making</option>
-          </select>
+          <div className="field-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>Category <span className="required-dot"></span></span>
+            {formData.categories.length < 3 && (
+              <button type="button" onClick={addCategory} style={{ background: '#f3e8ff', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#9333ea' }}>
+                <Plus size={18} />
+              </button>
+            )}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
+            {formData.categories.map((cat, index) => (
+              <div key={index} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <select 
+                  className="field-select" 
+                  value={cat} 
+                  onChange={(e) => handleCategoryChange(index, e.target.value)} 
+                  required
+                >
+                  <option value="" disabled>Choose category {index + 1}</option>
+                  {categoryOptions.map(option => (
+                    <option key={option} disabled={formData.categories.includes(option) && option !== cat}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                {formData.categories.length > 1 && (
+                  <button type="button" onClick={() => removeCategory(index)} style={{ background: '#fee2e2', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#ef4444', flexShrink: 0 }}>
+                    <Minus size={16} />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize: '0.75rem', color: '#6b21a8', marginTop: '0.75rem', fontStyle: 'italic' }}>
+            {formData.categories.length === 1 
+              ? 'Note: Tap the + button to participate in more than one category.' 
+              : 'Note: You can participate in up to 3 categories.'}
+          </div>
         </div>
 
         <div className="field-card">
@@ -188,17 +258,9 @@ const RegistrationForm = () => {
             <label className="radio-option"><input type="radio" name="participated_before" value="one" checked={formData.participated_before === 'one'} onChange={handleInputChange} required/> Only one time</label>
             <label className="radio-option"><input type="radio" name="participated_before" value="first" checked={formData.participated_before === 'first'} onChange={handleInputChange} required/> First Time</label>
           </div>
-        </div>
 
-        <div className="field-card">
-          <div className="field-label">Did you participate last year? <span className="required-dot"></span></div>
-          <div className="radio-row">
-            <label className="radio-option"><input type="radio" name="participated_last_year" value="yes" checked={formData.participated_last_year === 'yes'} onChange={handleInputChange} required/> Yes</label>
-            <label className="radio-option"><input type="radio" name="participated_last_year" value="no" checked={formData.participated_last_year === 'no'} onChange={handleInputChange} required/> No</label>
-          </div>
-
-          {formData.participated_last_year === 'yes' && (
-            <div className="sub-section">
+          {(formData.participated_before === 'one' || formData.participated_before === 'two') && (
+            <div className="sub-section" style={{ borderTop: '1px dashed #e9d5ff', marginTop: '1rem', paddingTop: '1rem' }}>
               <div className="field-label" style={{ marginBottom: '0.35rem' }}>Were you a winner in any category? <span className="required-dot"></span></div>
               <div className="radio-row">
                 <label className="radio-option"><input type="radio" name="winner_last_year" value="yes" checked={formData.winner_last_year === 'yes'} onChange={handleInputChange} required/> Yes</label>
@@ -207,9 +269,9 @@ const RegistrationForm = () => {
               
               {formData.winner_last_year === 'yes' && (
                 <div style={{ marginTop: '1rem' }}>
-                  <div className="sub-label">Select the category/categories you won (you may select more than one):</div>
+                  <div className="sub-label">Select the category/categories you won:</div>
                   <div className="checkbox-grid">
-                    {['Dance', 'Bhajan', 'Speech', 'Sloka Recitation', 'Instrument Playing', 'Acting', 'Poem', 'Story Telling', 'Painting', 'Video Making'].map(cat => (
+                    {categoryOptions.map(cat => (
                       <label key={cat} className={`check-option ${formData.categories_won.includes(cat) ? 'checked' : ''}`}>
                         <input type="checkbox" name="categories_won" value={cat} checked={formData.categories_won.includes(cat)} onChange={handleInputChange}/> {cat}
                       </label>
