@@ -13,7 +13,6 @@ const RegistrationForm = () => {
     city_state: '',
     base_name: '',
     categories: [''],
-    participation_type: '',
     participated_before: '',
     winner_last_year: '',
     categories_won: [] as string[]
@@ -68,7 +67,6 @@ const RegistrationForm = () => {
       city_state: '',
       base_name: '',
       categories: [''],
-      participation_type: '',
       participated_before: '',
       winner_last_year: '',
       categories_won: []
@@ -241,13 +239,7 @@ const RegistrationForm = () => {
           </div>
         </div>
 
-        <div className="field-card">
-          <div className="field-label">Participation Type <span className="required-dot"></span></div>
-          <div className="radio-row">
-            <label className="radio-option"><input type="radio" name="participation_type" value="solo" checked={formData.participation_type === 'solo'} onChange={handleInputChange} required/> Solo</label>
-            <label className="radio-option"><input type="radio" name="participation_type" value="group" checked={formData.participation_type === 'group'} onChange={handleInputChange} required/> Group</label>
-          </div>
-        </div>
+
 
         <div className="section-label">Previous Participation</div>
 

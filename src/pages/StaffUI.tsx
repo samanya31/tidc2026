@@ -14,7 +14,6 @@ interface Registration {
   city_state: string;
   base_name: string;
   category: string;
-  participation_type: string;
   participated_before: string;
   participated_last_year: string;
   winner_last_year: string;
@@ -110,7 +109,7 @@ const StaffUI = () => {
     if (filteredRegistrations.length === 0) return;
     
     // Create headers
-    const headers = ['ID', 'Date', 'Full Name', 'Mobile Number', 'WhatsApp', 'Email', 'DOB', 'City/State', 'BACE', 'Category', 'Type', 'Participated Before', 'Participated Last Year', 'Winner Last Year', 'Categories Won'];
+    const headers = ['ID', 'Date', 'Full Name', 'Mobile Number', 'WhatsApp', 'Email', 'DOB', 'City/State', 'BACE', 'Category', 'Participated Before', 'Participated Last Year', 'Winner Last Year', 'Categories Won'];
     
     // Create rows
     const rows = filteredRegistrations.map(reg => [
@@ -124,7 +123,6 @@ const StaffUI = () => {
       `"${reg.city_state || ''}"`,
       `"${reg.base_name || ''}"`,
       `"${reg.category || ''}"`,
-      reg.participation_type || '',
       reg.participated_before || '',
       reg.participated_last_year || '',
       reg.winner_last_year || '',
@@ -262,7 +260,6 @@ const StaffUI = () => {
               <th>Contact</th>
               <th>BACE</th>
               <th>Category</th>
-              <th>Type</th>
               <th>History</th>
             </tr>
           </thead>
@@ -297,11 +294,7 @@ const StaffUI = () => {
                       ))}
                     </div>
                   </td>
-                  <td>
-                    <span className={`badge ${reg.participation_type === 'solo' ? 'badge-amber' : 'badge-purple'}`} style={{ textTransform: 'capitalize' }}>
-                      {reg.participation_type}
-                    </span>
-                  </td>
+
                   <td>
                     {reg.participated_before === 'first' ? 'First Time' : 'Returning'}
                     {reg.winner_last_year === 'yes' && (
