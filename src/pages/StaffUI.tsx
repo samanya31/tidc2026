@@ -291,7 +291,11 @@ const StaffUI = () => {
                   </td>
                   <td>{reg.base_name}</td>
                   <td>
-                    <span className="badge badge-purple">{reg.category}</span>
+                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                      {(reg.category || '').split(', ').map((cat, i) => (
+                        <span key={i} className="badge badge-purple">{cat}</span>
+                      ))}
+                    </div>
                   </td>
                   <td>
                     <span className={`badge ${reg.participation_type === 'solo' ? 'badge-amber' : 'badge-purple'}`} style={{ textTransform: 'capitalize' }}>
