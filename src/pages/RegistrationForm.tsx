@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import bannerImg from '../assets/DN_TIDC.png';
-import syllabusFile from '../assets/TIDC -R1 SYLLABUS.pdf';
+import syllabusFile from '../assets/syllabus.pdf';
 import { Plus, Minus } from 'lucide-react';
 
 const RegistrationForm = () => {
@@ -85,7 +85,7 @@ const RegistrationForm = () => {
   const triggerDownload = () => {
     const link = document.createElement('a');
     link.href = syllabusFile;
-    link.download = 'TIDC -R1 SYLLABUS.pdf';
+    link.download = 'syllabus.pdf';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
