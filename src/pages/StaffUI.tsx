@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Search, RefreshCw, LogOut, Lock, Download } from 'lucide-react';
+import { Search, RefreshCw, LogOut, Lock, Download, ArrowUpDown } from 'lucide-react';
 import type { Session } from '@supabase/supabase-js';
 
 interface Registration {
@@ -32,6 +32,7 @@ const StaffUI = () => {
   const [dataLoading, setDataLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [participationFilter, setParticipationFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('newest');
   const [dataError, setDataError] = useState('');
 
   useEffect(() => {
@@ -93,26 +94,42 @@ const StaffUI = () => {
     }
   };
 
-  const filteredRegistrations = registrations.filter(reg => {
-    const matchesSearch = reg.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          reg.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          reg.mobile_number?.includes(searchTerm);
-    
-    const matchesFilter = participationFilter === 'all' || 
-                          (participationFilter === 'yes' && reg.participated_last_year === 'yes') ||
-                          (participationFilter === 'no' && reg.participated_last_year !== 'yes');
-                          
-    return matchesSearch && matchesFilter;
-  });
+  const sortedAndFilteredRegistrations = registrations
+    .filter(reg => {
+      const matchesSearch = reg.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            reg.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            reg.mobile_number?.includes(searchTerm);
+      
+      const matchesFilter = participationFilter === 'all' || 
+                            (participationFilter === 'yes' && reg.participated_last_year === 'yes') ||
+                            (participationFilter === 'no' && reg.participated_last_year !== 'yes');
+                            
+      return matchesSearch && matchesFilter;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'newest') {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+      if (sortBy === 'bace') {
+        return (a.base_name || '').localeCompare(b.base_name || '');
+      }
+      if (sortBy === 'category') {
+        return (a.category || '').localeCompare(b.category || '');
+      }
+      if (sortBy === 'name') {
+        return (a.full_name || '').localeCompare(b.full_name || '');
+      }
+      return 0;
+    });
 
   const exportToCSV = () => {
-    if (filteredRegistrations.length === 0) return;
+    if (sortedAndFilteredRegistrations.length === 0) return;
     
     // Create headers
     const headers = ['ID', 'Date', 'Full Name', 'Mobile Number', 'WhatsApp', 'Email', 'DOB', 'City/State', 'BACE', 'Category', 'Participated Before', 'Participated Last Year', 'Winner Last Year', 'Categories Won'];
     
     // Create rows
-    const rows = filteredRegistrations.map(reg => [
+    const rows = sortedAndFilteredRegistrations.map(reg => [
       reg.id,
       new Date(reg.created_at).toLocaleDateString(),
       `"${reg.full_name || ''}"`,
@@ -206,7 +223,7 @@ const StaffUI = () => {
       <div className="dashboard-header">
         <h1 className="dashboard-title">TIDC 2026 Staff Dashboard</h1>
         <div className="dashboard-actions">
-          <button className="btn-primary" onClick={exportToCSV} disabled={filteredRegistrations.length === 0}>
+          <button className="btn-primary" onClick={exportToCSV} disabled={sortedAndFilteredRegistrations.length === 0}>
             <Download size={18} />
             Export Excel
           </button>
@@ -239,15 +256,32 @@ const StaffUI = () => {
           />
         </div>
         
-        <select 
-          value={participationFilter} 
-          onChange={(e) => setParticipationFilter(e.target.value)}
-          style={{ background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #e9d5ff', fontFamily: 'Poppins', color: '#3b0764', outline: 'none', minWidth: '200px' }}
-        >
-          <option value="all">All Participants</option>
-          <option value="yes">Participated Last Year</option>
-          <option value="no">New This Year</option>
-        </select>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.85rem', color: '#6b21a8', fontWeight: 600 }}>Filter:</span>
+          <select 
+            value={participationFilter} 
+            onChange={(e) => setParticipationFilter(e.target.value)}
+            style={{ background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #e9d5ff', fontFamily: 'Poppins', color: '#3b0764', outline: 'none', minWidth: '160px' }}
+          >
+            <option value="all">All Participants</option>
+            <option value="yes">Participated Last Year</option>
+            <option value="no">New This Year</option>
+          </select>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.85rem', color: '#6b21a8', fontWeight: 600 }}>Sort By:</span>
+          <select 
+            value={sortBy} 
+            onChange={(e) => setSortBy(e.target.value)}
+            style={{ background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #e9d5ff', fontFamily: 'Poppins', color: '#3b0764', outline: 'none', minWidth: '160px' }}
+          >
+            <option value="newest">Newest First</option>
+            <option value="bace">BACE (A-Z)</option>
+            <option value="category">Category (A-Z)</option>
+            <option value="name">Name (A-Z)</option>
+          </select>
+        </div>
       </div>
 
       <div className="table-container" style={{ overflowX: 'auto' }}>
@@ -266,18 +300,18 @@ const StaffUI = () => {
           <tbody>
             {dataLoading ? (
               <tr>
-                <td colSpan={8} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
                   Loading registrations...
                 </td>
               </tr>
-            ) : filteredRegistrations.length === 0 ? (
+            ) : sortedAndFilteredRegistrations.length === 0 ? (
               <tr>
-                <td colSpan={8} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
                   No registrations found.
                 </td>
               </tr>
             ) : (
-              filteredRegistrations.map((reg) => (
+              sortedAndFilteredRegistrations.map((reg) => (
                 <tr key={reg.id}>
                   <td>#{reg.id}</td>
                   <td>{new Date(reg.created_at).toLocaleDateString()}</td>

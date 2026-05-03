@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import bannerImg from '../assets/DN_TIDC.png';
+import syllabusFile from '../assets/TIDC -R1 SYLLABUS.pdf';
 import { Plus, Minus } from 'lucide-react';
 
 const RegistrationForm = () => {
@@ -12,7 +13,7 @@ const RegistrationForm = () => {
     dob: '',
     city_state: '',
     base_name: '',
-    categories: [''],
+    categories: [{ name: '', type: '' }],
     participated_before: '',
     winner_last_year: '',
     categories_won: [] as string[]
@@ -38,15 +39,21 @@ const RegistrationForm = () => {
     }
   };
 
-  const handleCategoryChange = (index: number, value: string) => {
+  const handleCategoryNameChange = (index: number, value: string) => {
     const newCategories = [...formData.categories];
-    newCategories[index] = value;
+    newCategories[index] = { name: value, type: '' }; // Reset type if name changes
+    setFormData(prev => ({ ...prev, categories: newCategories }));
+  };
+
+  const handleCategoryTypeChange = (index: number, value: string) => {
+    const newCategories = [...formData.categories];
+    newCategories[index].type = value;
     setFormData(prev => ({ ...prev, categories: newCategories }));
   };
 
   const addCategory = () => {
     if (formData.categories.length < 3) {
-      setFormData(prev => ({ ...prev, categories: [...prev.categories, ''] }));
+      setFormData(prev => ({ ...prev, categories: [...prev.categories, { name: '', type: '' }] }));
     }
   };
 
@@ -66,7 +73,7 @@ const RegistrationForm = () => {
       dob: '',
       city_state: '',
       base_name: '',
-      categories: [''],
+      categories: [{ name: '', type: '' }],
       participated_before: '',
       winner_last_year: '',
       categories_won: []
@@ -75,11 +82,26 @@ const RegistrationForm = () => {
     setError('');
   };
 
+  const triggerDownload = () => {
+    const link = document.createElement('a');
+    link.href = syllabusFile;
+    link.download = 'TIDC -R1 SYLLABUS.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (formData.categories.some(cat => !cat)) {
+    if (formData.categories.some(cat => !cat.name)) {
       setError('Please select all categories or remove the empty ones.');
+      return;
+    }
+
+    // Validate types for Dance/Instrument
+    if (formData.categories.some(cat => (cat.name === 'Dance' || cat.name === 'Instrument Playing') && !cat.type)) {
+      setError('Please select Solo or Group for Dance/Instrument categories.');
       return;
     }
 
@@ -88,24 +110,33 @@ const RegistrationForm = () => {
     setSuccess(false);
 
     try {
-      // Prepare data for Supabase
-      // We'll join multiple categories into a single string for the 'category' column
+      // Prepare category string with types
+      const categoryString = formData.categories
+        .map(cat => cat.name + (cat.type ? ` (${cat.type})` : ''))
+        .join(', ');
+
       const submissionData = {
-        ...formData,
-        category: formData.categories.join(', '),
-        // We removed participated_last_year from UI, so we can set it based on participated_before
+        full_name: formData.full_name,
+        mobile_number: formData.mobile_number,
+        whatsapp_number: formData.whatsapp_number,
+        email: formData.email,
+        dob: formData.dob,
+        city_state: formData.city_state,
+        base_name: formData.base_name,
+        category: categoryString,
+        participated_before: formData.participated_before,
+        winner_last_year: formData.winner_last_year,
+        categories_won: formData.categories_won,
         participated_last_year: (formData.participated_before === 'one' || formData.participated_before === 'two') ? 'yes' : 'no'
       };
-      
-      // Remove the local 'categories' array before sending to DB
-      const { categories, ...dataToInsert } = submissionData;
 
       const { error: dbError } = await supabase
         .from('tidc_registrations')
-        .insert([dataToInsert]);
+        .insert([submissionData]);
 
       if (dbError) throw dbError;
       
+      triggerDownload(); // Download syllabus on success
       setSuccess(true);
       setTimeout(() => {
         handleClear();
@@ -135,7 +166,7 @@ const RegistrationForm = () => {
             <div className="modal-content">
               <div className="modal-icon">✅</div>
               <h2>Submission Successful!</h2>
-              <p>Thank you! Your registration has been submitted successfully. Hare Krishna!</p>
+              <p>Thank you! Your registration has been submitted successfully and your syllabus is downloading. Hare Krishna!</p>
               <button type="button" className="btn-primary" onClick={() => { setSuccess(false); handleClear(); }} style={{ width: '100%', marginTop: '1.5rem', justifyContent: 'center' }}>
                 Close
               </button>
@@ -210,24 +241,38 @@ const RegistrationForm = () => {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
             {formData.categories.map((cat, index) => (
-              <div key={index} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <select 
-                  className="field-select" 
-                  value={cat} 
-                  onChange={(e) => handleCategoryChange(index, e.target.value)} 
-                  required
-                >
-                  <option value="" disabled>Choose category {index + 1}</option>
-                  {categoryOptions.map(option => (
-                    <option key={option} disabled={formData.categories.includes(option) && option !== cat}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-                {formData.categories.length > 1 && (
-                  <button type="button" onClick={() => removeCategory(index)} style={{ background: '#fee2e2', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#ef4444', flexShrink: 0 }}>
-                    <Minus size={16} />
-                  </button>
+              <div key={index} style={{ borderBottom: index < formData.categories.length - 1 ? '1px solid #f3e8ff' : 'none', paddingBottom: index < formData.categories.length - 1 ? '0.75rem' : '0' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <select 
+                    className="field-select" 
+                    value={cat.name} 
+                    onChange={(e) => handleCategoryNameChange(index, e.target.value)} 
+                    required
+                  >
+                    <option value="" disabled>Choose category {index + 1}</option>
+                    {categoryOptions.map(option => (
+                      <option key={option} disabled={formData.categories.some((c, i) => i !== index && c.name === option)}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  {formData.categories.length > 1 && (
+                    <button type="button" onClick={() => removeCategory(index)} style={{ background: '#fee2e2', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#ef4444', flexShrink: 0 }}>
+                      <Minus size={16} />
+                    </button>
+                  )}
+                </div>
+                
+                {(cat.name === 'Dance' || cat.name === 'Instrument Playing') && (
+                  <div className="radio-row" style={{ marginTop: '0.5rem', paddingLeft: '0.5rem' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#6b21a8', marginRight: '1rem', fontWeight: 600 }}>Type:</div>
+                    <label className="radio-option" style={{ fontSize: '0.85rem' }}>
+                      <input type="radio" name={`type-${index}`} value="Solo" checked={cat.type === 'Solo'} onChange={() => handleCategoryTypeChange(index, 'Solo')} required /> Solo
+                    </label>
+                    <label className="radio-option" style={{ fontSize: '0.85rem' }}>
+                      <input type="radio" name={`type-${index}`} value="Group" checked={cat.type === 'Group'} onChange={() => handleCategoryTypeChange(index, 'Group')} required /> Group
+                    </label>
+                  </div>
                 )}
               </div>
             ))}
@@ -238,8 +283,6 @@ const RegistrationForm = () => {
               : 'Note: You can participate in up to 3 categories.'}
           </div>
         </div>
-
-
 
         <div className="section-label">Previous Participation</div>
 
@@ -278,13 +321,17 @@ const RegistrationForm = () => {
         <div className="important-note">
           <span className="note-icon">⚠️</span>
           <div className="note-text">
-            <strong>Important Note:</strong> If you are shortlisted in two categories, you will be allowed to participate in <strong>only one category</strong> in the final round.
+            <strong>Important Note:</strong>
+            <ul style={{ paddingLeft: '1.2rem', margin: '0.5rem 0 0 0' }}>
+              <li>If you are shortlisted in two categories, you will be allowed to participate in <strong>only one category</strong> in the final round.</li>
+              <li>If you participated last year and <strong>won</strong> in a specific category, you <strong>cannot participate</strong> in that same category again this year.</li>
+            </ul>
           </div>
         </div>
 
         <div className="submit-wrap">
           <button type="submit" className="submit-btn" disabled={loading}>
-            {loading ? 'Submitting...' : '🙏 Submit Registration'}
+            {loading ? 'Submitting...' : '🙏 Submit & Download Syllabus'}
           </button>
           <button type="button" className="clear-link" onClick={handleClear}>Clear form</button>
         </div>
