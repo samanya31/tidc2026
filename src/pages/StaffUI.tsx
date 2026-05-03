@@ -32,8 +32,16 @@ const StaffUI = () => {
   const [dataLoading, setDataLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [participationFilter, setParticipationFilter] = useState('all');
+  const [baceFilter, setBaceFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [dataError, setDataError] = useState('');
+
+  const baceOptions = [
+    'Ayodhya', 'Badrinath', 'Braj Dham', 'Dankaur', 'Ekchakra', 'Gambhira',
+    'Gaurdham', 'Goverdhan', 'Govind Dham', 'Gurugram', 'Indraprastha',
+    'Jagnnathpuri', 'Mamgachhi', 'Mathura', 'Mayapur', 'Nadiya', 'Shantipur',
+    'Srivas Angan', 'Tughlakabad', 'Temple', 'Other'
+  ];
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -100,11 +108,13 @@ const StaffUI = () => {
                             reg.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             reg.mobile_number?.includes(searchTerm);
       
-      const matchesFilter = participationFilter === 'all' || 
-                            (participationFilter === 'yes' && reg.participated_last_year === 'yes') ||
-                            (participationFilter === 'no' && reg.participated_last_year !== 'yes');
+      const matchesParticipation = participationFilter === 'all' || 
+                                   (participationFilter === 'yes' && reg.participated_last_year === 'yes') ||
+                                   (participationFilter === 'no' && reg.participated_last_year !== 'yes');
+      
+      const matchesBace = baceFilter === 'all' || reg.base_name === baceFilter;
                             
-      return matchesSearch && matchesFilter;
+      return matchesSearch && matchesParticipation && matchesBace;
     })
     .sort((a, b) => {
       if (sortBy === 'newest') {
@@ -244,20 +254,37 @@ const StaffUI = () => {
         </div>
       )}
 
-      <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, minWidth: '250px', display: 'flex', alignItems: 'center', background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #e9d5ff', boxShadow: '0 2px 10px rgba(147,51,234,0.05)' }}>
-          <Search size={20} color="#9333ea" style={{ marginRight: '0.5rem' }} />
-          <input 
-            type="text" 
-            placeholder="Search by name, email, or phone..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ border: 'none', outline: 'none', width: '100%', fontFamily: 'Poppins', fontSize: '0.95rem' }}
-          />
+      <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <div style={{ flex: 1, minWidth: '250px' }}>
+          <div style={{ fontSize: '0.85rem', color: '#6b21a8', fontWeight: 600, marginBottom: '0.5rem' }}>Search:</div>
+          <div style={{ display: 'flex', alignItems: 'center', background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #e9d5ff', boxShadow: '0 2px 10px rgba(147,51,234,0.05)' }}>
+            <Search size={20} color="#9333ea" style={{ marginRight: '0.5rem' }} />
+            <input 
+              type="text" 
+              placeholder="Name, email, phone..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ border: 'none', outline: 'none', width: '100%', fontFamily: 'Poppins', fontSize: '0.95rem' }}
+            />
+          </div>
         </div>
         
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.85rem', color: '#6b21a8', fontWeight: 600 }}>Filter:</span>
+        <div>
+          <div style={{ fontSize: '0.85rem', color: '#6b21a8', fontWeight: 600, marginBottom: '0.5rem' }}>BACE:</div>
+          <select 
+            value={baceFilter} 
+            onChange={(e) => setBaceFilter(e.target.value)}
+            style={{ background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #e9d5ff', fontFamily: 'Poppins', color: '#3b0764', outline: 'none', minWidth: '160px' }}
+          >
+            <option value="all">All BACEs</option>
+            {baceOptions.map(option => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <div style={{ fontSize: '0.85rem', color: '#6b21a8', fontWeight: 600, marginBottom: '0.5rem' }}>Filter:</div>
           <select 
             value={participationFilter} 
             onChange={(e) => setParticipationFilter(e.target.value)}
@@ -269,8 +296,8 @@ const StaffUI = () => {
           </select>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.85rem', color: '#6b21a8', fontWeight: 600 }}>Sort By:</span>
+        <div>
+          <div style={{ fontSize: '0.85rem', color: '#6b21a8', fontWeight: 600, marginBottom: '0.5rem' }}>Sort By:</div>
           <select 
             value={sortBy} 
             onChange={(e) => setSortBy(e.target.value)}
@@ -293,7 +320,7 @@ const StaffUI = () => {
               <th>Full Name</th>
               <th>Contact</th>
               <th>BACE</th>
-              <th>Category</th>
+              <th>Category (Type)</th>
               <th>History</th>
             </tr>
           </thead>
@@ -330,10 +357,12 @@ const StaffUI = () => {
                   </td>
 
                   <td>
-                    {reg.participated_before === 'first' ? 'First Time' : 'Returning'}
-                    {reg.winner_last_year === 'yes' && (
-                      <div style={{ fontSize: '0.75rem', color: '#d97706', marginTop: '4px', fontWeight: 600 }}>🏆 Prev Winner</div>
-                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <span style={{ fontSize: '0.85rem' }}>{reg.participated_before === 'first' ? 'First Time' : 'Returning'}</span>
+                      {reg.winner_last_year === 'yes' && (
+                        <span style={{ fontSize: '0.75rem', color: '#d97706', fontWeight: 600 }}>🏆 Prev Winner</span>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
