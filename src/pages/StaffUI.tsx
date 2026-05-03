@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Search, RefreshCw, LogOut, Lock, Download, ArrowUpDown } from 'lucide-react';
+import { Search, RefreshCw, LogOut, Lock, Download } from 'lucide-react';
 import type { Session } from '@supabase/supabase-js';
 
 interface Registration {
