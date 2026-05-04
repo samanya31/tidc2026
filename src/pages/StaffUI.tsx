@@ -360,7 +360,9 @@ const StaffUI = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       <span style={{ fontSize: '0.85rem' }}>{reg.participated_before === 'first' ? 'First Time' : 'Returning'}</span>
                       {reg.winner_last_year === 'yes' && (
-                        <span style={{ fontSize: '0.75rem', color: '#d97706', fontWeight: 600 }}>🏆 Prev Winner</span>
+                        <span style={{ fontSize: '0.75rem', color: '#d97706', fontWeight: 600 }}>
+                          🏆 Winner: {(reg.categories_won || []).join(', ')}
+                        </span>
                       )}
                     </div>
                   </td>
