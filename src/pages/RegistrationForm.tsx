@@ -138,9 +138,6 @@ const RegistrationForm = () => {
       
       triggerDownload(); // Download syllabus on success
       setSuccess(true);
-      setTimeout(() => {
-        handleClear();
-      }, 3000);
     } catch (err: any) {
       setError(err.message || 'An error occurred during registration.');
     } finally {
