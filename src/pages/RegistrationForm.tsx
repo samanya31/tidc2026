@@ -13,7 +13,7 @@ const RegistrationForm = () => {
     dob: '',
     city_state: '',
     base_name: '',
-    categories: [{ name: '', type: '' }],
+    categories: [{ name: '', type: '', instrument: '' }],
     participated_before: '',
     winner_last_year: '',
     categories_won: [] as string[]
@@ -41,7 +41,7 @@ const RegistrationForm = () => {
 
   const handleCategoryNameChange = (index: number, value: string) => {
     const newCategories = [...formData.categories];
-    newCategories[index] = { name: value, type: '' }; // Reset type if name changes
+    newCategories[index] = { name: value, type: '', instrument: '' }; // Reset type and instrument if name changes
     setFormData(prev => ({ ...prev, categories: newCategories }));
   };
 
@@ -51,9 +51,15 @@ const RegistrationForm = () => {
     setFormData(prev => ({ ...prev, categories: newCategories }));
   };
 
+  const handleInstrumentChange = (index: number, value: string) => {
+    const newCategories = [...formData.categories];
+    newCategories[index].instrument = value;
+    setFormData(prev => ({ ...prev, categories: newCategories }));
+  };
+
   const addCategory = () => {
     if (formData.categories.length < 3) {
-      setFormData(prev => ({ ...prev, categories: [...prev.categories, { name: '', type: '' }] }));
+      setFormData(prev => ({ ...prev, categories: [...prev.categories, { name: '', type: '', instrument: '' }] }));
     }
   };
 
@@ -73,7 +79,7 @@ const RegistrationForm = () => {
       dob: '',
       city_state: '',
       base_name: '',
-      categories: [{ name: '', type: '' }],
+      categories: [{ name: '', type: '', instrument: '' }],
       participated_before: '',
       winner_last_year: '',
       categories_won: []
@@ -99,9 +105,15 @@ const RegistrationForm = () => {
       return;
     }
 
-    // Validate types for Acting/Instrument
-    if (formData.categories.some(cat => (cat.name === 'Acting' || cat.name === 'Instrument Playing') && !cat.type)) {
-      setError('Please select Solo or Group for Acting/Instrument categories.');
+    // Validate types for Acting/Dance/Instrument
+    if (formData.categories.some(cat => (cat.name === 'Acting' || cat.name === 'Instrument Playing' || cat.name === 'Dance') && !cat.type)) {
+      setError('Please select Solo or Group for the selected categories.');
+      return;
+    }
+
+    // Validate instrument selection
+    if (formData.categories.some(cat => cat.name === 'Instrument Playing' && !cat.instrument)) {
+      setError('Please select an instrument.');
       return;
     }
 
@@ -110,9 +122,16 @@ const RegistrationForm = () => {
     setSuccess(false);
 
     try {
-      // Prepare category string with types
+      // Prepare category string with types and instruments
       const categoryString = formData.categories
-        .map(cat => cat.name + (cat.type ? ` (${cat.type})` : ''))
+        .map(cat => {
+          let details = '';
+          if (cat.type && cat.instrument) details = `${cat.type} - ${cat.instrument}`;
+          else if (cat.type) details = cat.type;
+          else if (cat.instrument) details = cat.instrument;
+          
+          return cat.name + (details ? ` (${details})` : '');
+        })
         .join(', ');
 
       const submissionData = {
@@ -148,6 +167,10 @@ const RegistrationForm = () => {
   const categoryOptions = [
     'Dance', 'Bhajan', 'Speech', 'Sloka Recitation', 'Instrument Playing',
     'Acting', 'Poem', 'Story Telling', 'Painting', 'Video Making'
+  ];
+
+  const instrumentOptions = [
+    'Mridanga', 'Kartal or Wompher', 'Keypad', 'Octapad', 'Flute', 'Harmonium', 'Guitar', 'Other'
   ];
 
   return (
@@ -274,7 +297,7 @@ const RegistrationForm = () => {
                   )}
                 </div>
                 
-                {(cat.name === 'Acting' || cat.name === 'Instrument Playing') && (
+                {(cat.name === 'Acting' || cat.name === 'Instrument Playing' || cat.name === 'Dance') && (
                   <div className="radio-row" style={{ marginTop: '0.5rem', paddingLeft: '0.5rem' }}>
                     <div style={{ fontSize: '0.8rem', color: '#6b21a8', marginRight: '1rem', fontWeight: 600 }}>Type:</div>
                     <label className="radio-option" style={{ fontSize: '0.85rem' }}>
@@ -283,6 +306,23 @@ const RegistrationForm = () => {
                     <label className="radio-option" style={{ fontSize: '0.85rem' }}>
                       <input type="radio" name={`type-${index}`} value="Group" checked={cat.type === 'Group'} onChange={() => handleCategoryTypeChange(index, 'Group')} required /> Group
                     </label>
+                  </div>
+                )}
+
+                {cat.name === 'Instrument Playing' && (
+                  <div style={{ marginTop: '0.5rem', paddingLeft: '0.5rem' }}>
+                    <select 
+                      className="field-select" 
+                      style={{ fontSize: '0.85rem', height: '38px' }}
+                      value={cat.instrument} 
+                      onChange={(e) => handleInstrumentChange(index, e.target.value)}
+                      required
+                    >
+                      <option value="" disabled>Choose instrument</option>
+                      {instrumentOptions.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
                   </div>
                 )}
               </div>
@@ -336,7 +376,6 @@ const RegistrationForm = () => {
             <ul style={{ paddingLeft: '1.2rem', margin: '0.5rem 0 0 0' }}>
               <li>If you are shortlisted in two categories, you will be allowed to participate in <strong>only one category</strong> in the final round.</li>
               <li>If you participated last year and <strong>won</strong> in a specific category, you <strong>cannot participate</strong> in that same category again this year.</li>
-              <li>This competition is only for those people who are associated with <strong>BACE Delhi</strong>, not for outsiders.</li>
             </ul>
           </div>
         </div>
