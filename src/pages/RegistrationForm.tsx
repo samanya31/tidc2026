@@ -167,6 +167,20 @@ const RegistrationForm = () => {
               <div className="modal-icon">✅</div>
               <h2>Submission Successful!</h2>
               <p>Thank you! Your registration has been submitted successfully and your syllabus is downloading. Hare Krishna!</p>
+              
+              <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f0fdf4', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
+                <div style={{ fontSize: '0.9rem', color: '#166534', fontWeight: 600, marginBottom: '0.5rem' }}>Join the community:</div>
+                <a 
+                  href="https://chat.whatsapp.com/EGxUxYl9o1ULVqqgc1RcNR" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#25D366', color: 'white', textDecoration: 'none', padding: '0.75rem', borderRadius: '8px', fontWeight: 600, fontSize: '0.95rem' }}
+                >
+                  🟢 Join WhatsApp Group
+                </a>
+                <div style={{ fontSize: '0.75rem', color: '#15803d', marginTop: '0.5rem' }}>Get all TIDC 2026 updates here!</div>
+              </div>
+
               <button type="button" className="btn-primary" onClick={() => { setSuccess(false); handleClear(); }} style={{ width: '100%', marginTop: '1.5rem', justifyContent: 'center' }}>
                 Close
               </button>
