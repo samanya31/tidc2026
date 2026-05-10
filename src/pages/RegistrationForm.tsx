@@ -260,7 +260,7 @@ const RegistrationForm = () => {
             <option>Gurugram</option><option>Indraprastha</option><option>Jagnnathpuri</option>
             <option>Mamgachhi</option><option>Mathura</option><option>Mayapur</option>
             <option>Nadiya</option><option>Shantipur</option><option>Srivas Angan</option>
-            <option>Tughlakabad</option><option>Temple</option><option>Other</option>
+            <option>Tughlakabad</option><option>Temple</option><option>Rajvidya</option><option>Other</option>
           </select>
         </div>
 

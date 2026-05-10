@@ -40,7 +40,7 @@ const StaffUI = () => {
     'Ayodhya', 'Badrinath', 'Braj Dham', 'Dankaur', 'Ekchakra', 'Gambhira',
     'Gaurdham', 'Goverdhan', 'Govind Dham', 'Gurugram', 'Indraprastha',
     'Jagnnathpuri', 'Mamgachhi', 'Mathura', 'Mayapur', 'Nadiya', 'Shantipur',
-    'Srivas Angan', 'Tughlakabad', 'Temple', 'Other'
+    'Srivas Angan', 'Tughlakabad', 'Temple', 'Rajvidya', 'Other'
   ];
 
   useEffect(() => {
