@@ -105,8 +105,8 @@ const RegistrationForm = () => {
       return;
     }
 
-    // Validate types for Acting/Dance/Instrument
-    if (formData.categories.some(cat => (cat.name === 'Acting' || cat.name === 'Instrument Playing' || cat.name === 'Dance') && !cat.type)) {
+    // Validate types for Acting/Instrument
+    if (formData.categories.some(cat => (cat.name === 'Acting' || cat.name === 'Instrument Playing') && !cat.type)) {
       setError('Please select Solo or Group for the selected categories.');
       return;
     }
@@ -297,7 +297,7 @@ const RegistrationForm = () => {
                   )}
                 </div>
                 
-                {(cat.name === 'Acting' || cat.name === 'Instrument Playing' || cat.name === 'Dance') && (
+                {(cat.name === 'Acting' || cat.name === 'Instrument Playing') && (
                   <div className="radio-row" style={{ marginTop: '0.5rem', paddingLeft: '0.5rem' }}>
                     <div style={{ fontSize: '0.8rem', color: '#6b21a8', marginRight: '1rem', fontWeight: 600 }}>Type:</div>
                     <label className="radio-option" style={{ fontSize: '0.85rem' }}>
