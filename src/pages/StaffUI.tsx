@@ -344,6 +344,16 @@ const StaffUI = () => {
 
   const selectableStudents = getSelectableStudents();
 
+  // Group results by category
+  const resultsByCategory = results.reduce((acc, current) => {
+    const cat = current.category || 'Other';
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(current);
+    return acc;
+  }, {} as Record<string, any[]>);
+
+  const resultCategories = Object.keys(resultsByCategory).sort();
+
   const sortedAndFilteredRegistrations = registrations
     .filter(reg => {
       const matchesSearch = reg.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -882,34 +892,43 @@ const StaffUI = () => {
                     </td>
                   </tr>
                 ) : (
-                  results.map((res) => (
-                    <tr key={res.id}>
-                      <td style={{ fontWeight: 500 }}>{res.student_name}</td>
-                      <td>{res.bace || 'N/A'}</td>
-                      <td>
-                        <span className="badge" style={{ background: res.round === 'Final Round' ? '#fdf2f8' : '#faf5ff', color: res.round === 'Final Round' ? '#db2777' : '#6b21a8', border: res.round === 'Final Round' ? '1px solid #fbcfe8' : '1px solid #e9d5ff', fontWeight: 600 }}>{res.round}</span>
-                      </td>
-                      <td>
-                        <span className="badge badge-amber">{res.status}</span>
-                      </td>
-                      <td>
-                        <button
-                          onClick={() => handleDeleteResult(res.id)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            color: '#e11d48',
-                            cursor: 'pointer',
-                            fontSize: '0.85rem',
-                            fontWeight: 600,
-                            textDecoration: 'underline',
-                            padding: 0
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
+                  resultCategories.map((cat) => (
+                    <React.Fragment key={cat}>
+                      <tr style={{ background: '#f5f3ff' }}>
+                        <td colSpan={5} style={{ fontWeight: 700, color: '#4c1d95', padding: '0.65rem 1rem', fontSize: '0.85rem' }}>
+                          📁 {cat} ({resultsByCategory[cat].length})
+                        </td>
+                      </tr>
+                      {resultsByCategory[cat].map((res) => (
+                        <tr key={res.id}>
+                          <td style={{ fontWeight: 500, paddingLeft: '1.5rem' }}>{res.student_name}</td>
+                          <td>{res.bace || 'N/A'}</td>
+                          <td>
+                            <span className="badge" style={{ background: res.round === 'Final Round' ? '#fdf2f8' : '#faf5ff', color: res.round === 'Final Round' ? '#db2777' : '#6b21a8', border: res.round === 'Final Round' ? '1px solid #fbcfe8' : '1px solid #e9d5ff', fontWeight: 600 }}>{res.round}</span>
+                          </td>
+                          <td>
+                            <span className="badge badge-amber">{res.status}</span>
+                          </td>
+                          <td>
+                            <button
+                              onClick={() => handleDeleteResult(res.id)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#e11d48',
+                                cursor: 'pointer',
+                                fontSize: '0.85rem',
+                                fontWeight: 600,
+                                textDecoration: 'underline',
+                                padding: 0
+                              }}
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </React.Fragment>
                   ))
                 )}
               </tbody>
