@@ -737,25 +737,6 @@ const StaffUI = () => {
                 <option value="name">Name (A-Z)</option>
               </select>
             </div>
-
-            <div style={{ marginLeft: 'auto' }}>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="btn-primary"
-                style={{
-                  padding: '0.6rem 1.25rem',
-                  fontSize: '0.9rem',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  height: '42px',
-                  boxShadow: '0 4px 12px rgba(147, 51, 234, 0.15)'
-                }}
-              >
-                ➕ Add Student
-              </button>
-            </div>
           </div>
 
           <div className="table-container" style={{ overflowX: 'auto' }}>
@@ -827,9 +808,26 @@ const StaffUI = () => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', alignItems: 'start' }}>
           {/* Form Card */}
           <div className="field-card" style={{ margin: 0 }}>
-            <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.4rem', fontWeight: 700, marginBottom: '1.5rem', borderBottom: '1px solid #f3e8ff', paddingBottom: '0.75rem' }}>
-              Publish Result
-            </h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #f3e8ff', paddingBottom: '0.75rem' }}>
+              <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.4rem', fontWeight: 700, margin: 0 }}>
+                Publish Result
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(true)}
+                className="btn-primary"
+                style={{
+                  padding: '0.4rem 0.85rem',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                }}
+              >
+                ➕ Add Student
+              </button>
+            </div>
             
             {uploadError && <div className="message-box message-error" style={{ marginBottom: '1.25rem' }}>⚠️ {uploadError}</div>}
             {uploadSuccess && <div className="message-box message-success" style={{ marginBottom: '1.25rem' }}>✅ Result published successfully!</div>}
