@@ -769,9 +769,8 @@ const StaffUI = () => {
                   required
                 >
                   <option value="Qualified">Qualified</option>
-                  <option value="Winner (1st Place)">Winner (1st Place)</option>
-                  <option value="Runner Up (2nd Place)">Runner Up (2nd Place)</option>
-                  <option value="Special Mention">Special Mention</option>
+                  <option value="1st Place">1st Place</option>
+                  <option value="2nd Place">2nd Place</option>
                 </select>
               </div>
 
