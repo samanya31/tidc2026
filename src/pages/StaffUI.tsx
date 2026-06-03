@@ -42,6 +42,7 @@ const StaffUI = () => {
 
   // Results form state
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedRound, setSelectedRound] = useState<'Round 2' | 'Final Round'>('Round 2');
   const [selectedRegId, setSelectedRegId] = useState('');
   const [resultStatus, setResultStatus] = useState('Qualified');
   const [uploadLoading, setUploadLoading] = useState(false);
@@ -159,12 +160,12 @@ const StaffUI = () => {
       const student = registrations.find(r => r.id === Number(selectedRegId));
       if (!student) throw new Error('Selected student not found.');
 
-      // Check if student already has this result category
+      // Check if student already has this result category and round
       const alreadyPublished = results.some(
-        r => r.registration_id === student.id && r.category === selectedCategory
+        r => r.registration_id === student.id && r.category === selectedCategory && r.round === selectedRound
       );
       if (alreadyPublished) {
-        throw new Error(`${student.full_name} is already qualified/marked for category "${selectedCategory}".`);
+        throw new Error(`${student.full_name} is already qualified/marked for category "${selectedCategory}" in ${selectedRound}.`);
       }
 
       const { error } = await supabase
@@ -173,7 +174,9 @@ const StaffUI = () => {
           {
             registration_id: student.id,
             student_name: student.full_name,
+            bace: student.base_name,
             category: selectedCategory,
+            round: selectedRound,
             status: resultStatus
           }
         ]);
@@ -243,11 +246,26 @@ const StaffUI = () => {
     }
   };
 
-  const filteredStudentsForCategory = registrations.filter(reg => {
-    if (!selectedCategory) return false;
-    // Match the category name inside the student's category string (e.g. "Dance, Bhajan")
-    return reg.category?.toLowerCase().includes(selectedCategory.toLowerCase());
-  });
+  const getSelectableStudents = () => {
+    if (!selectedCategory) return [];
+    
+    if (selectedRound === 'Round 2') {
+      // Return students who registered for this category
+      return registrations.filter(reg => 
+        reg.category?.toLowerCase().includes(selectedCategory.toLowerCase())
+      );
+    } else {
+      // Return students who have been qualified for Round 2 in this category
+      const round2StudentIds = results
+        .filter(res => res.category === selectedCategory && res.round === 'Round 2')
+        .map(res => res.registration_id);
+      
+      // Get the registration details for these students
+      return registrations.filter(reg => round2StudentIds.includes(reg.id));
+    }
+  };
+
+  const selectableStudents = getSelectableStudents();
 
   const sortedAndFilteredRegistrations = registrations
     .filter(reg => {
@@ -662,6 +680,26 @@ const StaffUI = () => {
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b21a8', marginBottom: '0.5rem' }}>
+                  Select Round
+                </label>
+                <select
+                  className="field-select"
+                  value={selectedRound}
+                  onChange={(e) => {
+                    setSelectedRound(e.target.value as 'Round 2' | 'Final Round');
+                    setSelectedRegId('');
+                    setUploadError('');
+                    setUploadSuccess(false);
+                  }}
+                  required
+                >
+                  <option value="Round 2">Round 2</option>
+                  <option value="Final Round">Final Round</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b21a8', marginBottom: '0.5rem' }}>
                   Select Qualified Student
                 </label>
                 <select
@@ -676,9 +714,14 @@ const StaffUI = () => {
                   required
                 >
                   <option value="" disabled>
-                    {!selectedCategory ? 'Choose category first' : `Select student (${filteredStudentsForCategory.length} registered)`}
+                    {!selectedCategory 
+                      ? 'Choose category first' 
+                      : selectedRound === 'Round 2'
+                      ? `Select student (${selectableStudents.length} registered)`
+                      : `Select student (${selectableStudents.length} qualified from Round 2)`
+                    }
                   </option>
-                  {filteredStudentsForCategory.map(student => (
+                  {selectableStudents.map(student => (
                     <option key={student.id} value={student.id}>
                       {student.full_name} ({student.base_name}) - ID: #{student.id}
                     </option>
@@ -726,7 +769,9 @@ const StaffUI = () => {
               <thead>
                 <tr>
                   <th>Student</th>
+                  <th>BACE</th>
                   <th>Category</th>
+                  <th>Round</th>
                   <th>Status</th>
                   <th>Action</th>
                 </tr>
@@ -734,13 +779,13 @@ const StaffUI = () => {
               <tbody>
                 {resultsLoading && results.length === 0 ? (
                   <tr>
-                    <td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
+                    <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
                       Loading results...
                     </td>
                   </tr>
                 ) : results.length === 0 ? (
                   <tr>
-                    <td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
+                    <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
                       No results published yet.
                     </td>
                   </tr>
@@ -748,8 +793,12 @@ const StaffUI = () => {
                   results.map((res) => (
                     <tr key={res.id}>
                       <td style={{ fontWeight: 500 }}>{res.student_name}</td>
+                      <td>{res.bace || 'N/A'}</td>
                       <td>
                         <span className="badge badge-purple">{res.category}</span>
+                      </td>
+                      <td>
+                        <span className="badge" style={{ background: res.round === 'Final Round' ? '#fdf2f8' : '#faf5ff', color: res.round === 'Final Round' ? '#db2777' : '#6b21a8', border: res.round === 'Final Round' ? '1px solid #fbcfe8' : '1px solid #e9d5ff', fontWeight: 600 }}>{res.round}</span>
                       </td>
                       <td>
                         <span className="badge badge-amber">{res.status}</span>

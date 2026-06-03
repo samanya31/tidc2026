@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import bannerImg from '../assets/DN_TIDC.png';
-import { ArrowLeft, Search, Trophy } from 'lucide-react';
+import { ArrowLeft, Search, Trophy, Medal } from 'lucide-react';
 
 interface Result {
   id: number;
   student_name: string;
+  bace: string;
   category: string;
+  round: string;
   status: string;
 }
 
@@ -28,6 +30,7 @@ const Results = () => {
         .from('tidc_results')
         .select('*')
         .order('category', { ascending: true })
+        .order('round', { ascending: false }) // Final Round first
         .order('student_name', { ascending: true });
 
       if (error) throw error;
@@ -42,17 +45,22 @@ const Results = () => {
   // Filter results by search term
   const filteredResults = results.filter(res =>
     res.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (res.bace && res.bace.toLowerCase().includes(searchTerm.toLowerCase())) ||
     res.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Group filtered results by category
+  // Group filtered results by category and round
   const groupedResults = filteredResults.reduce((acc, current) => {
     if (!acc[current.category]) {
-      acc[current.category] = [];
+      acc[current.category] = { round2: [], finalRound: [] };
     }
-    acc[current.category].push(current);
+    if (current.round === 'Final Round') {
+      acc[current.category].finalRound.push(current);
+    } else {
+      acc[current.category].round2.push(current);
+    }
     return acc;
-  }, {} as Record<string, Result[]>);
+  }, {} as Record<string, { round2: Result[]; finalRound: Result[] }>);
 
   const categories = Object.keys(groupedResults);
 
@@ -98,7 +106,7 @@ const Results = () => {
             <Search size={20} color="#9333ea" style={{ marginRight: '0.75rem' }} />
             <input 
               type="text" 
-              placeholder="Search by student name or category..." 
+              placeholder="Search by student name, BACE, or category..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{ border: 'none', outline: 'none', width: '100%', background: 'transparent', fontFamily: 'Poppins', fontSize: '1rem', color: '#3b0764' }}
@@ -118,51 +126,89 @@ const Results = () => {
               No results match your search term.
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              {categories.map(category => (
-                <div key={category} style={{ background: '#fdfbfe', border: '1px solid #e9d5ff', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 2px 8px rgba(147,51,234,0.02)' }}>
-                  <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.4rem', fontWeight: 700, marginBottom: '1rem', borderBottom: '1px solid #f3e8ff', paddingBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Trophy size={20} color="#d97706" /> {category}
-                  </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+              {categories.map(category => {
+                const hasFinalRound = groupedResults[category].finalRound.length > 0;
+                const hasRound2 = groupedResults[category].round2.length > 0;
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1rem' }}>
-                    {groupedResults[category].map(res => (
-                      <div 
-                        key={res.id} 
-                        style={{
-                          background: '#fff',
-                          border: '1px solid #e9d5ff',
-                          borderRadius: '10px',
-                          padding: '1rem',
-                          boxShadow: '0 2px 6px rgba(147,51,234,0.03)',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '0.5rem',
-                          transition: 'transform 0.2s, box-shadow 0.2s',
-                          cursor: 'default'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'translateY(-2px)';
-                          e.currentTarget.style.boxShadow = '0 6px 12px rgba(147,51,234,0.08)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.boxShadow = '0 2px 6px rgba(147,51,234,0.03)';
-                        }}
-                      >
-                        <div style={{ fontWeight: 600, color: '#1e1b4b', fontSize: '1.05rem' }}>
-                          {res.student_name}
-                        </div>
-                        <div>
-                          <span className={`badge ${res.status.toLowerCase().includes('winner') ? 'badge-amber' : 'badge-purple'}`} style={{ fontSize: '0.75rem', fontWeight: 600 }}>
-                            {res.status}
-                          </span>
+                return (
+                  <div key={category} style={{ background: '#fdfbfe', border: '1px solid #e9d5ff', borderRadius: '16px', padding: '1.75rem', boxShadow: '0 4px 15px rgba(147,51,234,0.03)' }}>
+                    <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.7rem', fontWeight: 700, marginBottom: '1.5rem', borderBottom: '2px solid #e9d5ff', paddingBottom: '0.5rem' }}>
+                      {category}
+                    </h2>
+
+                    {/* Final Round Table */}
+                    {hasFinalRound && (
+                      <div style={{ marginBottom: '2rem' }}>
+                        <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#b45309', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <Trophy size={18} color="#d97706" /> Final Round Results ({groupedResults[category].finalRound.length})
+                        </h3>
+                        <div className="table-container" style={{ overflowX: 'auto', border: '1px solid #fef3c7' }}>
+                          <table className="data-table" style={{ width: '100%' }}>
+                            <thead>
+                              <tr>
+                                <th>Student</th>
+                                <th>BACE</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {groupedResults[category].finalRound.map(res => (
+                                <tr key={res.id} style={{ background: '#fffbeb' }}>
+                                  <td style={{ fontWeight: 600, color: '#78350f' }}>{res.student_name}</td>
+                                  <td>{res.bace || 'N/A'}</td>
+                                  <td>
+                                    <span className="badge badge-purple">{res.category}</span>
+                                  </td>
+                                  <td>
+                                    <span className="badge badge-amber" style={{ border: '1px solid #fde68a' }}>{res.status}</span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
                       </div>
-                    ))}
+                    )}
+
+                    {/* Round 2 Table */}
+                    {hasRound2 && (
+                      <div>
+                        <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#6b21a8', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <Medal size={18} color="#9333ea" /> Round 2 Qualifiers ({groupedResults[category].round2.length})
+                        </h3>
+                        <div className="table-container" style={{ overflowX: 'auto' }}>
+                          <table className="data-table" style={{ width: '100%' }}>
+                            <thead>
+                              <tr>
+                                <th>Student</th>
+                                <th>BACE</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {groupedResults[category].round2.map(res => (
+                                <tr key={res.id}>
+                                  <td style={{ fontWeight: 600, color: '#1e1b4b' }}>{res.student_name}</td>
+                                  <td>{res.bace || 'N/A'}</td>
+                                  <td>
+                                    <span className="badge badge-purple">{res.category}</span>
+                                  </td>
+                                  <td>
+                                    <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{res.status}</span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
