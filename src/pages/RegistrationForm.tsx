@@ -1,16 +1,37 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import bannerImg from '../assets/DN_TIDC.png';
 import syllabusFile from '../assets/syllabus.pdf';
 import { Plus, Minus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-// Deadline constant: edit this date to change when registrations close (Format: YYYY-MM-DDTHH:mm:ss)
-export const REGISTRATION_DEADLINE = '2026-06-15T23:59:59';
+const FALLBACK_REGISTRATION_DEADLINE = '2026-06-15T23:59:59';
+
 
 
 const RegistrationForm = () => {
   const navigate = useNavigate();
+  const [deadline, setDeadline] = useState(FALLBACK_REGISTRATION_DEADLINE);
+
+  useEffect(() => {
+    const fetchDeadline = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('tidc_settings')
+          .select('value')
+          .eq('key', 'registration_deadline')
+          .single();
+        if (error) throw error;
+        if (data && data.value) {
+          setDeadline(data.value);
+        }
+      } catch (err) {
+        console.warn('Could not load deadline from DB, using fallback:', err);
+      }
+    };
+    fetchDeadline();
+  }, []);
+
   const [formData, setFormData] = useState({
     full_name: '',
     mobile_number: '',
@@ -179,7 +200,7 @@ const RegistrationForm = () => {
     'Mridanga', 'Kartal or Wompher', 'Keypad', 'Octapad', 'Flute', 'Harmonium', 'Guitar', 'Other'
   ];
 
-  const isClosed = new Date() > new Date(REGISTRATION_DEADLINE);
+  const isClosed = new Date() > new Date(deadline);
 
   if (isClosed) {
     return (

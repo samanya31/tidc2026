@@ -36,7 +36,7 @@ const StaffUI = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [dataError, setDataError] = useState('');
 
-  const [activeTab, setActiveTab] = useState<'registrations' | 'results'>('registrations');
+  const [activeTab, setActiveTab] = useState<'registrations' | 'results' | 'settings'>('registrations');
   const [results, setResults] = useState<any[]>([]);
   const [resultsLoading, setResultsLoading] = useState(false);
 
@@ -47,6 +47,12 @@ const StaffUI = () => {
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
+
+  // Settings state
+  const [settingsDeadline, setSettingsDeadline] = useState('');
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsSuccess, setSettingsSuccess] = useState(false);
+  const [settingsError, setSettingsError] = useState('');
 
   const categoryOptions = [
     'Dance', 'Bhajan', 'Speech', 'Sloka Recitation', 'Instrument Playing',
@@ -79,6 +85,7 @@ const StaffUI = () => {
     if (session) {
       fetchRegistrations();
       fetchResults();
+      fetchSettings();
     }
   }, [session]);
 
@@ -194,6 +201,45 @@ const StaffUI = () => {
       fetchResults();
     } catch (err: any) {
       alert(err.message || 'Failed to delete result.');
+    }
+  };
+
+  const fetchSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tidc_settings')
+        .select('value')
+        .eq('key', 'registration_deadline')
+        .single();
+      if (error) throw error;
+      if (data && data.value) {
+        const formatted = data.value.substring(0, 16);
+        setSettingsDeadline(formatted);
+      }
+    } catch (err) {
+      console.error('Failed to load settings:', err);
+    }
+  };
+
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSettingsLoading(true);
+    setSettingsSuccess(false);
+    setSettingsError('');
+    try {
+      const valueToSave = settingsDeadline.includes(':') && settingsDeadline.split(':').length === 2
+        ? `${settingsDeadline}:00`
+        : settingsDeadline;
+
+      const { error } = await supabase
+        .from('tidc_settings')
+        .upsert({ key: 'registration_deadline', value: valueToSave }, { onConflict: 'key' });
+      if (error) throw error;
+      setSettingsSuccess(true);
+    } catch (err: any) {
+      setSettingsError(err.message || 'Failed to save settings');
+    } finally {
+      setSettingsLoading(false);
     }
   };
 
@@ -342,10 +388,33 @@ const StaffUI = () => {
           )}
           <button 
             className="btn-outline" 
-            onClick={activeTab === 'registrations' ? fetchRegistrations : fetchResults} 
-            disabled={activeTab === 'registrations' ? dataLoading : resultsLoading}
+            onClick={
+              activeTab === 'registrations' 
+                ? fetchRegistrations 
+                : activeTab === 'results' 
+                ? fetchResults 
+                : fetchSettings
+            } 
+            disabled={
+              activeTab === 'registrations' 
+                ? dataLoading 
+                : activeTab === 'results' 
+                ? resultsLoading 
+                : settingsLoading
+            }
           >
-            <RefreshCw size={18} className={(activeTab === 'registrations' ? dataLoading : resultsLoading) ? "animate-spin" : ""} />
+            <RefreshCw 
+              size={18} 
+              className={
+                (activeTab === 'registrations' 
+                  ? dataLoading 
+                  : activeTab === 'results' 
+                  ? resultsLoading 
+                  : settingsLoading) 
+                  ? "animate-spin" 
+                  : ""
+              } 
+            />
             Refresh
           </button>
           <button className="btn-outline" onClick={handleLogout} style={{ color: '#e11d48', borderColor: '#e11d48' }}>
@@ -357,7 +426,13 @@ const StaffUI = () => {
 
       <div style={{ display: 'flex', borderBottom: '2px solid #e9d5ff', marginBottom: '2rem', gap: '1.5rem', flexWrap: 'wrap' }}>
         <button
-          onClick={() => setActiveTab('registrations')}
+          onClick={() => {
+            setActiveTab('registrations');
+            setUploadSuccess(false);
+            setUploadError('');
+            setSettingsSuccess(false);
+            setSettingsError('');
+          }}
           style={{
             background: 'none',
             border: 'none',
@@ -374,7 +449,13 @@ const StaffUI = () => {
           📋 Registrations ({registrations.length})
         </button>
         <button
-          onClick={() => setActiveTab('results')}
+          onClick={() => {
+            setActiveTab('results');
+            setUploadSuccess(false);
+            setUploadError('');
+            setSettingsSuccess(false);
+            setSettingsError('');
+          }}
           style={{
             background: 'none',
             border: 'none',
@@ -390,9 +471,33 @@ const StaffUI = () => {
         >
           🏆 Manage Results ({results.length})
         </button>
+        <button
+          onClick={() => {
+            setActiveTab('settings');
+            setUploadSuccess(false);
+            setUploadError('');
+            setSettingsSuccess(false);
+            setSettingsError('');
+            fetchSettings();
+          }}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: '1rem 0.5rem',
+            fontSize: '1.05rem',
+            fontWeight: 600,
+            color: activeTab === 'settings' ? '#9333ea' : '#6b21a8',
+            borderBottom: activeTab === 'settings' ? '3px solid #9333ea' : '3px solid transparent',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            marginBottom: '-2px'
+          }}
+        >
+          ⚙️ Settings
+        </button>
       </div>
 
-      {activeTab === 'registrations' ? (
+      {activeTab === 'registrations' && (
         <>
           {dataError && (
             <div className="message-box message-error">
@@ -519,7 +624,9 @@ const StaffUI = () => {
             </table>
           </div>
         </>
-      ) : (
+      )}
+
+      {activeTab === 'results' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', alignItems: 'start' }}>
           {/* Form Card */}
           <div className="field-card" style={{ margin: 0 }}>
@@ -669,6 +776,50 @@ const StaffUI = () => {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'settings' && (
+        <div style={{ maxWidth: '500px', margin: '0 auto' }}>
+          <div className="field-card" style={{ margin: 0 }}>
+            <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.4rem', fontWeight: 700, marginBottom: '1.5rem', borderBottom: '1px solid #f3e8ff', paddingBottom: '0.75rem' }}>
+              ⚙️ Contest Settings
+            </h3>
+            
+            {settingsError && <div className="message-box message-error" style={{ marginBottom: '1.25rem' }}>⚠️ {settingsError}</div>}
+            {settingsSuccess && <div className="message-box message-success" style={{ marginBottom: '1.25rem' }}>✅ Settings updated successfully!</div>}
+            
+            <form onSubmit={handleSaveSettings} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#6b21a8', marginBottom: '0.5rem' }}>
+                  Registration Deadline Date & Time <span className="required-dot"></span>
+                </label>
+                <input 
+                  className="field-input" 
+                  type="datetime-local" 
+                  value={settingsDeadline} 
+                  onChange={(e) => {
+                    setSettingsDeadline(e.target.value);
+                    setSettingsSuccess(false);
+                    setSettingsError('');
+                  }}
+                  required 
+                />
+                <div style={{ fontSize: '0.75rem', color: '#6b21a8', marginTop: '0.5rem', fontStyle: 'italic' }}>
+                  Set the date and time when the registration form will automatically close and display results.
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="btn-primary"
+                style={{ width: '100%', padding: '0.8rem', justifyContent: 'center', fontWeight: 600, marginTop: '0.5rem' }}
+                disabled={settingsLoading || !settingsDeadline}
+              >
+                {settingsLoading ? 'Saving Settings...' : '💾 Save Settings'}
+              </button>
+            </form>
           </div>
         </div>
       )}
