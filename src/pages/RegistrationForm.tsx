@@ -3,8 +3,14 @@ import { supabase } from '../lib/supabase';
 import bannerImg from '../assets/DN_TIDC.png';
 import syllabusFile from '../assets/syllabus.pdf';
 import { Plus, Minus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+// Deadline constant: edit this date to change when registrations close (Format: YYYY-MM-DDTHH:mm:ss)
+export const REGISTRATION_DEADLINE = '2026-06-15T23:59:59';
+
 
 const RegistrationForm = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     full_name: '',
     mobile_number: '',
@@ -172,6 +178,48 @@ const RegistrationForm = () => {
   const instrumentOptions = [
     'Mridanga', 'Kartal or Wompher', 'Keypad', 'Octapad', 'Flute', 'Harmonium', 'Guitar', 'Other'
   ];
+
+  const isClosed = new Date() > new Date(REGISTRATION_DEADLINE);
+
+  if (isClosed) {
+    return (
+      <>
+        <div className="hero-banner">
+          <img src={bannerImg} alt="DN.TIDC Banner" style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }} />
+        </div>
+
+        <div className="form-body" style={{ marginTop: '2rem' }}>
+          <div className="field-card" style={{ textAlign: 'center', padding: '3.5rem 2rem', border: '1px solid #e9d5ff', borderRadius: '16px', background: '#fff', boxShadow: '0 4px 20px rgba(147, 51, 234, 0.08)' }}>
+            <div style={{ fontSize: '4rem', marginBottom: '1rem', animation: 'bounce 2s infinite' }}>⏳</div>
+            <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '2rem', fontWeight: 700, marginBottom: '1rem' }}>
+              Registration Closed
+            </h2>
+            <p style={{ color: '#6b21a8', fontSize: '1.05rem', lineHeight: '1.6', maxWidth: '600px', margin: '0 auto 2.5rem' }}>
+              Registration dates are closed for the session of 2026. Thank you for your interest!
+            </p>
+            
+            <div style={{ borderTop: '1px dashed #e9d5ff', paddingTop: '2.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <p style={{ color: '#1e1b4b', fontWeight: 600, fontSize: '1rem', marginBottom: '1.25rem' }}>
+                🏆 Qualified students and results are now available:
+              </p>
+              <button 
+                type="button" 
+                className="submit-btn" 
+                onClick={() => navigate('/results')}
+                style={{ padding: '1rem 3rem', fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+              >
+                View Results Here
+              </button>
+            </div>
+          </div>
+          
+          <div className="footer-om" style={{ fontSize: '0.9rem', fontWeight: 500, marginTop: '2.5rem', textAlign: 'center' }}>
+            © 2026 All rights reserved, BACE Delhi
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

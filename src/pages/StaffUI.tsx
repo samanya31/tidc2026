@@ -36,6 +36,23 @@ const StaffUI = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [dataError, setDataError] = useState('');
 
+  const [activeTab, setActiveTab] = useState<'registrations' | 'results'>('registrations');
+  const [results, setResults] = useState<any[]>([]);
+  const [resultsLoading, setResultsLoading] = useState(false);
+
+  // Results form state
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedRegId, setSelectedRegId] = useState('');
+  const [resultStatus, setResultStatus] = useState('Qualified');
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+
+  const categoryOptions = [
+    'Dance', 'Bhajan', 'Speech', 'Sloka Recitation', 'Instrument Playing',
+    'Acting', 'Poem', 'Story Telling', 'Painting', 'Video Making'
+  ];
+
   const baceOptions = [
     'Ayodhya', 'Badrinath', 'Braj Dham', 'Dankaur', 'Ekchakra', 'Gambhira',
     'Gaurdham', 'Goverdhan', 'Govind Dham', 'Gurugram', 'Indraprastha',
@@ -61,6 +78,7 @@ const StaffUI = () => {
   useEffect(() => {
     if (session) {
       fetchRegistrations();
+      fetchResults();
     }
   }, [session]);
 
@@ -101,6 +119,89 @@ const StaffUI = () => {
       setDataLoading(false);
     }
   };
+
+  const fetchResults = async () => {
+    setResultsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('tidc_results')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setResults(data || []);
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setResultsLoading(false);
+    }
+  };
+
+  const handlePublishResult = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCategory || !selectedRegId) {
+      setUploadError('Please select both a category and a student.');
+      return;
+    }
+
+    setUploadLoading(true);
+    setUploadError('');
+    setUploadSuccess(false);
+
+    try {
+      const student = registrations.find(r => r.id === Number(selectedRegId));
+      if (!student) throw new Error('Selected student not found.');
+
+      // Check if student already has this result category
+      const alreadyPublished = results.some(
+        r => r.registration_id === student.id && r.category === selectedCategory
+      );
+      if (alreadyPublished) {
+        throw new Error(`${student.full_name} is already qualified/marked for category "${selectedCategory}".`);
+      }
+
+      const { error } = await supabase
+        .from('tidc_results')
+        .insert([
+          {
+            registration_id: student.id,
+            student_name: student.full_name,
+            category: selectedCategory,
+            status: resultStatus
+          }
+        ]);
+
+      if (error) throw error;
+
+      setUploadSuccess(true);
+      setSelectedRegId('');
+      fetchResults();
+    } catch (err: any) {
+      setUploadError(err.message || 'Failed to publish result.');
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
+  const handleDeleteResult = async (id: number) => {
+    if (!window.confirm('Are you sure you want to delete this result?')) return;
+    try {
+      const { error } = await supabase
+        .from('tidc_results')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      fetchResults();
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete result.');
+    }
+  };
+
+  const filteredStudentsForCategory = registrations.filter(reg => {
+    if (!selectedCategory) return false;
+    // Match the category name inside the student's category string (e.g. "Dance, Bhajan")
+    return reg.category?.toLowerCase().includes(selectedCategory.toLowerCase());
+  });
 
   const sortedAndFilteredRegistrations = registrations
     .filter(reg => {
@@ -233,12 +334,18 @@ const StaffUI = () => {
       <div className="dashboard-header">
         <h1 className="dashboard-title">TIDC 2026 Staff Dashboard</h1>
         <div className="dashboard-actions">
-          <button className="btn-primary" onClick={exportToCSV} disabled={sortedAndFilteredRegistrations.length === 0}>
-            <Download size={18} />
-            Export Excel
-          </button>
-          <button className="btn-outline" onClick={fetchRegistrations} disabled={dataLoading}>
-            <RefreshCw size={18} className={dataLoading ? "animate-spin" : ""} />
+          {activeTab === 'registrations' && (
+            <button className="btn-primary" onClick={exportToCSV} disabled={sortedAndFilteredRegistrations.length === 0}>
+              <Download size={18} />
+              Export Excel
+            </button>
+          )}
+          <button 
+            className="btn-outline" 
+            onClick={activeTab === 'registrations' ? fetchRegistrations : fetchResults} 
+            disabled={activeTab === 'registrations' ? dataLoading : resultsLoading}
+          >
+            <RefreshCw size={18} className={(activeTab === 'registrations' ? dataLoading : resultsLoading) ? "animate-spin" : ""} />
             Refresh
           </button>
           <button className="btn-outline" onClick={handleLogout} style={{ color: '#e11d48', borderColor: '#e11d48' }}>
@@ -248,130 +355,323 @@ const StaffUI = () => {
         </div>
       </div>
 
-      {dataError && (
-        <div className="message-box message-error">
-          ⚠️ {dataError}
-        </div>
-      )}
+      <div style={{ display: 'flex', borderBottom: '2px solid #e9d5ff', marginBottom: '2rem', gap: '1.5rem', flexWrap: 'wrap' }}>
+        <button
+          onClick={() => setActiveTab('registrations')}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: '1rem 0.5rem',
+            fontSize: '1.05rem',
+            fontWeight: 600,
+            color: activeTab === 'registrations' ? '#9333ea' : '#6b21a8',
+            borderBottom: activeTab === 'registrations' ? '3px solid #9333ea' : '3px solid transparent',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            marginBottom: '-2px'
+          }}
+        >
+          📋 Registrations ({registrations.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('results')}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: '1rem 0.5rem',
+            fontSize: '1.05rem',
+            fontWeight: 600,
+            color: activeTab === 'results' ? '#9333ea' : '#6b21a8',
+            borderBottom: activeTab === 'results' ? '3px solid #9333ea' : '3px solid transparent',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            marginBottom: '-2px'
+          }}
+        >
+          🏆 Manage Results ({results.length})
+        </button>
+      </div>
 
-      <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <div style={{ flex: 1, minWidth: '250px' }}>
-          <div style={{ fontSize: '0.85rem', color: '#6b21a8', fontWeight: 600, marginBottom: '0.5rem' }}>Search:</div>
-          <div style={{ display: 'flex', alignItems: 'center', background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #e9d5ff', boxShadow: '0 2px 10px rgba(147,51,234,0.05)' }}>
-            <Search size={20} color="#9333ea" style={{ marginRight: '0.5rem' }} />
-            <input 
-              type="text" 
-              placeholder="Name, email, phone..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ border: 'none', outline: 'none', width: '100%', fontFamily: 'Poppins', fontSize: '0.95rem' }}
-            />
+      {activeTab === 'registrations' ? (
+        <>
+          {dataError && (
+            <div className="message-box message-error">
+              ⚠️ {dataError}
+            </div>
+          )}
+
+          <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <div style={{ flex: 1, minWidth: '250px' }}>
+              <div style={{ fontSize: '0.85rem', color: '#6b21a8', fontWeight: 600, marginBottom: '0.5rem' }}>Search:</div>
+              <div style={{ display: 'flex', alignItems: 'center', background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #e9d5ff', boxShadow: '0 2px 10px rgba(147,51,234,0.05)' }}>
+                <Search size={20} color="#9333ea" style={{ marginRight: '0.5rem' }} />
+                <input 
+                  type="text" 
+                  placeholder="Name, email, phone..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{ border: 'none', outline: 'none', width: '100%', fontFamily: 'Poppins', fontSize: '0.95rem' }}
+                />
+              </div>
+            </div>
+            
+            <div>
+              <div style={{ fontSize: '0.85rem', color: '#6b21a8', fontWeight: 600, marginBottom: '0.5rem' }}>BACE:</div>
+              <select 
+                value={baceFilter} 
+                onChange={(e) => setBaceFilter(e.target.value)}
+                style={{ background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #e9d5ff', fontFamily: 'Poppins', color: '#3b0764', outline: 'none', minWidth: '160px' }}
+              >
+                <option value="all">All BACEs</option>
+                {baceOptions.map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <div style={{ fontSize: '0.85rem', color: '#6b21a8', fontWeight: 600, marginBottom: '0.5rem' }}>Filter:</div>
+              <select 
+                value={participationFilter} 
+                onChange={(e) => setParticipationFilter(e.target.value)}
+                style={{ background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #e9d5ff', fontFamily: 'Poppins', color: '#3b0764', outline: 'none', minWidth: '160px' }}
+              >
+                <option value="all">All Participants</option>
+                <option value="yes">Participated Last Year</option>
+                <option value="no">New This Year</option>
+              </select>
+            </div>
+
+            <div>
+              <div style={{ fontSize: '0.85rem', color: '#6b21a8', fontWeight: 600, marginBottom: '0.5rem' }}>Sort By:</div>
+              <select 
+                value={sortBy} 
+                onChange={(e) => setSortBy(e.target.value)}
+                style={{ background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #e9d5ff', fontFamily: 'Poppins', color: '#3b0764', outline: 'none', minWidth: '160px' }}
+              >
+                <option value="newest">Newest First</option>
+                <option value="bace">BACE (A-Z)</option>
+                <option value="category">Category (A-Z)</option>
+                <option value="name">Name (A-Z)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="table-container" style={{ overflowX: 'auto' }}>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Date</th>
+                  <th>Full Name</th>
+                  <th>Contact</th>
+                  <th>BACE</th>
+                  <th>Category (Type)</th>
+                  <th>History</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dataLoading ? (
+                  <tr>
+                    <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
+                      Loading registrations...
+                    </td>
+                  </tr>
+                ) : sortedAndFilteredRegistrations.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
+                      No registrations found.
+                    </td>
+                  </tr>
+                ) : (
+                  sortedAndFilteredRegistrations.map((reg) => (
+                    <tr key={reg.id}>
+                      <td>#{reg.id}</td>
+                      <td>{new Date(reg.created_at).toLocaleDateString()}</td>
+                      <td style={{ fontWeight: 500 }}>{reg.full_name}</td>
+                      <td>
+                        <div>{reg.mobile_number}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#6b21a8' }}>{reg.email}</div>
+                      </td>
+                      <td>{reg.base_name}</td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                          {(reg.category || '').split(', ').map((cat, i) => (
+                            <span key={i} className="badge badge-purple">{cat}</span>
+                          ))}
+                        </div>
+                      </td>
+
+                      <td>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '0.85rem' }}>{reg.participated_before === 'first' ? 'First Time' : 'Returning'}</span>
+                          {reg.winner_last_year === 'yes' && (
+                            <span style={{ fontSize: '0.75rem', color: '#d97706', fontWeight: 600 }}>
+                              🏆 Winner: {(reg.categories_won || []).join(', ')}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', alignItems: 'start' }}>
+          {/* Form Card */}
+          <div className="field-card" style={{ margin: 0 }}>
+            <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.4rem', fontWeight: 700, marginBottom: '1.5rem', borderBottom: '1px solid #f3e8ff', paddingBottom: '0.75rem' }}>
+              Publish Result
+            </h3>
+            
+            {uploadError && <div className="message-box message-error" style={{ marginBottom: '1.25rem' }}>⚠️ {uploadError}</div>}
+            {uploadSuccess && <div className="message-box message-success" style={{ marginBottom: '1.25rem' }}>✅ Result published successfully!</div>}
+            
+            <form onSubmit={handlePublishResult} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b21a8', marginBottom: '0.5rem' }}>
+                  Select Category
+                </label>
+                <select
+                  className="field-select"
+                  value={selectedCategory}
+                  onChange={(e) => {
+                    setSelectedCategory(e.target.value);
+                    setSelectedRegId('');
+                    setUploadError('');
+                    setUploadSuccess(false);
+                  }}
+                  required
+                >
+                  <option value="" disabled>Choose Category</option>
+                  {categoryOptions.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b21a8', marginBottom: '0.5rem' }}>
+                  Select Qualified Student
+                </label>
+                <select
+                  className="field-select"
+                  value={selectedRegId}
+                  onChange={(e) => {
+                    setSelectedRegId(e.target.value);
+                    setUploadError('');
+                    setUploadSuccess(false);
+                  }}
+                  disabled={!selectedCategory}
+                  required
+                >
+                  <option value="" disabled>
+                    {!selectedCategory ? 'Choose category first' : `Select student (${filteredStudentsForCategory.length} registered)`}
+                  </option>
+                  {filteredStudentsForCategory.map(student => (
+                    <option key={student.id} value={student.id}>
+                      {student.full_name} ({student.base_name}) - ID: #{student.id}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b21a8', marginBottom: '0.5rem' }}>
+                  Result Status
+                </label>
+                <select
+                  className="field-select"
+                  value={resultStatus}
+                  onChange={(e) => setResultStatus(e.target.value)}
+                  required
+                >
+                  <option value="Qualified">Qualified</option>
+                  <option value="Winner (1st Place)">Winner (1st Place)</option>
+                  <option value="Runner Up (2nd Place)">Runner Up (2nd Place)</option>
+                  <option value="Special Mention">Special Mention</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                className="btn-primary"
+                style={{ width: '100%', padding: '0.75rem', justifyContent: 'center', fontWeight: 600, marginTop: '0.5rem' }}
+                disabled={uploadLoading || !selectedCategory || !selectedRegId}
+              >
+                {uploadLoading ? 'Publishing...' : '🚀 Publish Result'}
+              </button>
+            </form>
+          </div>
+
+          {/* Results List */}
+          <div className="table-container" style={{ maxHeight: '600px', overflowY: 'auto' }}>
+            <div style={{ padding: '1.25rem 1.5rem', background: '#faf5ff', borderBottom: '2px solid #e9d5ff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
+                Published Results ({results.length})
+              </h3>
+            </div>
+            
+            <table className="data-table" style={{ width: '100%' }}>
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {resultsLoading && results.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
+                      Loading results...
+                    </td>
+                  </tr>
+                ) : results.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
+                      No results published yet.
+                    </td>
+                  </tr>
+                ) : (
+                  results.map((res) => (
+                    <tr key={res.id}>
+                      <td style={{ fontWeight: 500 }}>{res.student_name}</td>
+                      <td>
+                        <span className="badge badge-purple">{res.category}</span>
+                      </td>
+                      <td>
+                        <span className="badge badge-amber">{res.status}</span>
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => handleDeleteResult(res.id)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#e11d48',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                            textDecoration: 'underline',
+                            padding: 0
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
-        
-        <div>
-          <div style={{ fontSize: '0.85rem', color: '#6b21a8', fontWeight: 600, marginBottom: '0.5rem' }}>BACE:</div>
-          <select 
-            value={baceFilter} 
-            onChange={(e) => setBaceFilter(e.target.value)}
-            style={{ background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #e9d5ff', fontFamily: 'Poppins', color: '#3b0764', outline: 'none', minWidth: '160px' }}
-          >
-            <option value="all">All BACEs</option>
-            {baceOptions.map(option => (
-              <option key={option} value={option}>{option}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <div style={{ fontSize: '0.85rem', color: '#6b21a8', fontWeight: 600, marginBottom: '0.5rem' }}>Filter:</div>
-          <select 
-            value={participationFilter} 
-            onChange={(e) => setParticipationFilter(e.target.value)}
-            style={{ background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #e9d5ff', fontFamily: 'Poppins', color: '#3b0764', outline: 'none', minWidth: '160px' }}
-          >
-            <option value="all">All Participants</option>
-            <option value="yes">Participated Last Year</option>
-            <option value="no">New This Year</option>
-          </select>
-        </div>
-
-        <div>
-          <div style={{ fontSize: '0.85rem', color: '#6b21a8', fontWeight: 600, marginBottom: '0.5rem' }}>Sort By:</div>
-          <select 
-            value={sortBy} 
-            onChange={(e) => setSortBy(e.target.value)}
-            style={{ background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #e9d5ff', fontFamily: 'Poppins', color: '#3b0764', outline: 'none', minWidth: '160px' }}
-          >
-            <option value="newest">Newest First</option>
-            <option value="bace">BACE (A-Z)</option>
-            <option value="category">Category (A-Z)</option>
-            <option value="name">Name (A-Z)</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="table-container" style={{ overflowX: 'auto' }}>
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Date</th>
-              <th>Full Name</th>
-              <th>Contact</th>
-              <th>BACE</th>
-              <th>Category (Type)</th>
-              <th>History</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dataLoading ? (
-              <tr>
-                <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
-                  Loading registrations...
-                </td>
-              </tr>
-            ) : sortedAndFilteredRegistrations.length === 0 ? (
-              <tr>
-                <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
-                  No registrations found.
-                </td>
-              </tr>
-            ) : (
-              sortedAndFilteredRegistrations.map((reg) => (
-                <tr key={reg.id}>
-                  <td>#{reg.id}</td>
-                  <td>{new Date(reg.created_at).toLocaleDateString()}</td>
-                  <td style={{ fontWeight: 500 }}>{reg.full_name}</td>
-                  <td>
-                    <div>{reg.mobile_number}</div>
-                    <div style={{ fontSize: '0.8rem', color: '#6b21a8' }}>{reg.email}</div>
-                  </td>
-                  <td>{reg.base_name}</td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                      {(reg.category || '').split(', ').map((cat, i) => (
-                        <span key={i} className="badge badge-purple">{cat}</span>
-                      ))}
-                    </div>
-                  </td>
-
-                  <td>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                      <span style={{ fontSize: '0.85rem' }}>{reg.participated_before === 'first' ? 'First Time' : 'Returning'}</span>
-                      {reg.winner_last_year === 'yes' && (
-                        <span style={{ fontSize: '0.75rem', color: '#d97706', fontWeight: 600 }}>
-                          🏆 Winner: {(reg.categories_won || []).join(', ')}
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      )}
     </div>
   );
 };
