@@ -18,6 +18,7 @@ const Results = () => {
   const [results, setResults] = useState<Result[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState<'round2' | 'final'>('round2');
 
   useEffect(() => {
     fetchResults();
@@ -30,7 +31,6 @@ const Results = () => {
         .from('tidc_results')
         .select('*')
         .order('category', { ascending: true })
-        .order('round', { ascending: false }) // Final Round first
         .order('student_name', { ascending: true });
 
       if (error) throw error;
@@ -42,35 +42,55 @@ const Results = () => {
     }
   };
 
-  // Filter results by search term
+  // Filter by search term
   const filteredResults = results.filter(res =>
     res.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (res.bace && res.bace.toLowerCase().includes(searchTerm.toLowerCase())) ||
     res.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Group filtered results by category and round
-  const groupedResults = filteredResults.reduce((acc, current) => {
-    if (!acc[current.category]) {
-      acc[current.category] = { round2: [], finalRound: [] };
-    }
-    if (current.round === 'Final Round') {
-      acc[current.category].finalRound.push(current);
-    } else {
-      acc[current.category].round2.push(current);
-    }
-    return acc;
-  }, {} as Record<string, { round2: Result[]; finalRound: Result[] }>);
+  // Filter by active tab
+  const tabResults = filteredResults.filter(res =>
+    activeTab === 'final' ? res.round === 'Final Round' : res.round !== 'Final Round'
+  );
 
-  const categories = Object.keys(groupedResults);
+  // Group by category
+  const groupedByCategory = tabResults.reduce((acc, current) => {
+    if (!acc[current.category]) acc[current.category] = [];
+    acc[current.category].push(current);
+    return acc;
+  }, {} as Record<string, Result[]>);
+
+  const categories = Object.keys(groupedByCategory);
+
+  const tabStyle = (isActive: boolean): React.CSSProperties => ({
+    flex: 1,
+    padding: '0.85rem 1.5rem',
+    border: 'none',
+    background: isActive ? '#fff' : 'transparent',
+    color: isActive ? '#7c3aed' : '#6b21a8',
+    fontFamily: 'Poppins, sans-serif',
+    fontSize: '0.95rem',
+    fontWeight: isActive ? 700 : 500,
+    cursor: 'pointer',
+    borderRadius: '12px',
+    transition: 'all 0.3s ease',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+    boxShadow: isActive ? '0 4px 16px rgba(147,51,234,0.15)' : 'none',
+  });
 
   return (
     <>
-      <div className="hero-banner">
-        <img src={bannerImg} alt="DN.TIDC Banner" style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }} />
+      {/* Full-page background image with faded overlay */}
+      <div className="results-bg">
+        <img src={bannerImg} alt="DN.TIDC Background" />
+        <div className="results-bg-overlay" />
       </div>
 
-      <div className="form-body" style={{ marginTop: '2rem', maxWidth: '1100px' }}>
+      <div className="form-body results-content" style={{ marginTop: '2rem', maxWidth: '1100px', position: 'relative', zIndex: 1 }}>
         <button 
           onClick={() => navigate('/')} 
           style={{
@@ -102,6 +122,25 @@ const Results = () => {
           </p>
         </div>
 
+        {/* Tabs */}
+        <div style={{
+          display: 'flex',
+          gap: '0.5rem',
+          background: '#f3e8ff',
+          borderRadius: '16px',
+          padding: '0.35rem',
+          maxWidth: '500px',
+          margin: '0 auto 2rem',
+          border: '1px solid #e9d5ff',
+        }}>
+          <button style={tabStyle(activeTab === 'round2')} onClick={() => setActiveTab('round2')}>
+            <Medal size={18} /> Round 2
+          </button>
+          <button style={tabStyle(activeTab === 'final')} onClick={() => setActiveTab('final')}>
+            <Trophy size={18} /> Final Round
+          </button>
+        </div>
+
         {/* Search Bar Card */}
         <div className="field-card" style={{ maxWidth: '600px', margin: '0 auto 2.5rem', padding: '1rem 1.25rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', background: '#faf5ff', padding: '0.6rem 1rem', borderRadius: '10px', border: '1px solid #e9d5ff' }}>
@@ -126,84 +165,55 @@ const Results = () => {
           </div>
         ) : categories.length === 0 ? (
           <div className="field-card" style={{ textAlign: 'center', padding: '4rem 0', color: '#6b21a8', fontSize: '1rem', fontStyle: 'italic' }}>
-            No results match your search term.
+            {searchTerm ? 'No results match your search term.' : `No ${activeTab === 'final' ? 'Final Round' : 'Round 2'} results have been announced yet.`}
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            {categories.map(category => {
-              const hasFinalRound = groupedResults[category].finalRound.length > 0;
-              const hasRound2 = groupedResults[category].round2.length > 0;
+            {categories.map(category => (
+              <div key={category} className="field-card" style={{ padding: '1.75rem', background: '#fff', margin: 0 }}>
+                <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.8rem', fontWeight: 700, marginBottom: '1.5rem', borderBottom: '2px solid #e9d5ff', paddingBottom: '0.5rem' }}>
+                  {category}
+                </h2>
 
-              return (
-                <div key={category} className="field-card" style={{ padding: '1.75rem', background: '#fff', margin: 0 }}>
-                  <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.8rem', fontWeight: 700, marginBottom: '1.5rem', borderBottom: '2px solid #e9d5ff', paddingBottom: '0.5rem' }}>
-                    {category}
-                  </h2>
+                <h3 style={{
+                  fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  color: activeTab === 'final' ? '#b45309' : '#6b21a8',
+                }}>
+                  {activeTab === 'final' ? <Trophy size={18} color="#d97706" /> : <Medal size={18} color="#9333ea" />}
+                  {activeTab === 'final' ? 'Final Round Results' : 'Round 2 Qualifiers'} ({groupedByCategory[category].length})
+                </h3>
 
-                  {/* Final Round Table */}
-                  {hasFinalRound && (
-                    <div style={{ marginBottom: '2rem' }}>
-                      <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#b45309', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Trophy size={18} color="#d97706" /> Final Round Results ({groupedResults[category].finalRound.length})
-                      </h3>
-                      <div className="table-container" style={{ overflowX: 'auto', border: '1px solid #fef3c7', width: '100%' }}>
-                        <table className="data-table" style={{ width: '100%', tableLayout: 'auto' }}>
-                          <thead>
-                            <tr>
-                              <th style={{ padding: '0.75rem 1rem' }}>Student</th>
-                              <th style={{ padding: '0.75rem 1rem' }}>BACE</th>
-                              <th style={{ padding: '0.75rem 1rem' }}>Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {groupedResults[category].finalRound.map(res => (
-                              <tr key={res.id} style={{ background: '#fffbeb' }}>
-                                <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#78350f' }}>{res.student_name}</td>
-                                <td style={{ padding: '0.75rem 1rem' }}>{res.bace || 'N/A'}</td>
-                                <td style={{ padding: '0.75rem 1rem' }}>
-                                  <span className="badge badge-amber" style={{ border: '1px solid #fde68a' }}>{res.status}</span>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Round 2 Table */}
-                  {hasRound2 && (
-                    <div>
-                      <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#6b21a8', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Medal size={18} color="#9333ea" /> Round 2 Qualifiers ({groupedResults[category].round2.length})
-                      </h3>
-                      <div className="table-container" style={{ overflowX: 'auto', width: '100%' }}>
-                        <table className="data-table" style={{ width: '100%', tableLayout: 'auto' }}>
-                          <thead>
-                            <tr>
-                              <th style={{ padding: '0.75rem 1rem' }}>Student</th>
-                              <th style={{ padding: '0.75rem 1rem' }}>BACE</th>
-                              <th style={{ padding: '0.75rem 1rem' }}>Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {groupedResults[category].round2.map(res => (
-                              <tr key={res.id}>
-                                <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#1e1b4b' }}>{res.student_name}</td>
-                                <td style={{ padding: '0.75rem 1rem' }}>{res.bace || 'N/A'}</td>
-                                <td style={{ padding: '0.75rem 1rem' }}>
-                                  <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{res.status}</span>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
+                <div className="table-container" style={{
+                  overflowX: 'auto', width: '100%',
+                  border: activeTab === 'final' ? '1px solid #fef3c7' : undefined,
+                }}>
+                  <table className="data-table" style={{ width: '100%', tableLayout: 'auto' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ padding: '0.75rem 1rem' }}>Student</th>
+                        <th style={{ padding: '0.75rem 1rem' }}>BACE</th>
+                        <th style={{ padding: '0.75rem 1rem' }}>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {groupedByCategory[category].map(res => (
+                        <tr key={res.id} style={{ background: activeTab === 'final' ? '#fffbeb' : undefined }}>
+                          <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: activeTab === 'final' ? '#78350f' : '#1e1b4b' }}>{res.student_name}</td>
+                          <td style={{ padding: '0.75rem 1rem' }}>{res.bace || 'N/A'}</td>
+                          <td style={{ padding: '0.75rem 1rem' }}>
+                            {activeTab === 'final' ? (
+                              <span className="badge badge-amber" style={{ border: '1px solid #fde68a' }}>{res.status}</span>
+                            ) : (
+                              <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{res.status}</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
 

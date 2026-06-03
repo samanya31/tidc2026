@@ -208,6 +208,43 @@ const StaffUI = () => {
     }
   };
 
+  const quickPublish = async (regId: number, fullName: string, baseName: string, status: string) => {
+    setUploadLoading(true);
+    setUploadError('');
+    setUploadSuccess(false);
+    try {
+      const alreadyPublished = results.some(
+        r => r.registration_id === regId && 
+             r.category === selectedCategory && 
+             r.round === selectedRound
+      );
+
+      if (alreadyPublished) {
+        throw new Error('Result already published for this student, category, and round.');
+      }
+
+      const { error } = await supabase
+        .from('tidc_results')
+        .insert([{
+          registration_id: regId,
+          student_name: fullName,
+          bace: baseName,
+          category: selectedCategory,
+          round: selectedRound,
+          status: status
+        }]);
+
+      if (error) throw error;
+
+      setUploadSuccess(true);
+      fetchResults();
+    } catch (err: any) {
+      setUploadError(err.message || 'Failed to publish result.');
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
   const fetchSettings = async () => {
     try {
       const { data, error } = await supabase
@@ -658,7 +695,8 @@ const StaffUI = () => {
       )}
 
       {activeTab === 'results' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', alignItems: 'start' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', alignItems: 'start' }}>
           {/* Form Card */}
           <div className="field-card" style={{ margin: 0 }}>
             <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.4rem', fontWeight: 700, marginBottom: '1.5rem', borderBottom: '1px solid #f3e8ff', paddingBottom: '0.75rem' }}>
@@ -851,7 +889,131 @@ const StaffUI = () => {
             </table>
           </div>
         </div>
-      )}
+
+        {/* Student Candidate Selection Table */}
+        {selectedCategory && (
+          <div className="field-card" style={{ margin: 0 }}>
+            <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.4rem', fontWeight: 700, marginBottom: '1rem', borderBottom: '1px solid #f3e8ff', paddingBottom: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>📋 Candidates for {selectedCategory} ({selectedRound})</span>
+              <span style={{ fontSize: '0.9rem', color: '#6b21a8', fontWeight: 500 }}>
+                Total Candidates: {selectableStudents.length}
+              </span>
+            </h3>
+
+            <div className="table-container" style={{ maxHeight: '500px', overflowY: 'auto' }}>
+              <table className="data-table" style={{ width: '100%' }}>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Student Name</th>
+                    <th>BACE</th>
+                    <th>Status in this Round</th>
+                    <th>Quick Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectableStudents.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: '#6b21a8' }}>
+                        No candidates found matching the filters.
+                      </td>
+                    </tr>
+                  ) : (
+                    selectableStudents.map((student) => {
+                      const existingResult = results.find(
+                        r => r.registration_id === student.id && 
+                             r.category === selectedCategory && 
+                             r.round === selectedRound
+                      );
+
+                      return (
+                        <tr key={student.id}>
+                          <td style={{ fontWeight: 600 }}>#{student.id}</td>
+                          <td style={{ fontWeight: 500 }}>{student.full_name}</td>
+                          <td>{student.base_name || 'N/A'}</td>
+                          <td>
+                            {existingResult ? (
+                              <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>
+                                {existingResult.status}
+                              </span>
+                            ) : (
+                              <span className="badge badge-amber" style={{ background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a' }}>
+                                Pending Selection
+                              </span>
+                            )}
+                          </td>
+                          <td>
+                            {existingResult ? (
+                              <button
+                                onClick={() => handleDeleteResult(existingResult.id)}
+                                className="btn-danger"
+                                style={{
+                                  padding: '0.25rem 0.5rem',
+                                  fontSize: '0.8rem',
+                                  background: '#fee2e2',
+                                  color: '#b91c1c',
+                                  border: '1px solid #fca5a5',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer',
+                                  fontWeight: 600
+                                }}
+                              >
+                                Delete Result
+                              </button>
+                            ) : (
+                              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                <button
+                                  onClick={async () => {
+                                    await quickPublish(student.id, student.full_name, student.base_name, 'Qualified');
+                                  }}
+                                  className="btn-success"
+                                  style={{
+                                    padding: '0.25rem 0.5rem',
+                                    fontSize: '0.8rem',
+                                    background: '#ecfdf5',
+                                    color: '#047857',
+                                    border: '1px solid #a7f3d0',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontWeight: 600
+                                  }}
+                                >
+                                  Mark Qualified
+                                </button>
+                                <button
+                                  onClick={async () => {
+                                    const status = window.prompt("Enter status (e.g. 1st Place, 2nd Place, etc.):", "1st Place");
+                                    if (status) {
+                                      await quickPublish(student.id, student.full_name, student.base_name, status);
+                                    }
+                                  }}
+                                  style={{
+                                    padding: '0.25rem 0.5rem',
+                                    fontSize: '0.8rem',
+                                    background: '#f3e8ff',
+                                    color: '#6b21a8',
+                                    border: '1px solid #e9d5ff',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontWeight: 600
+                                  }}
+                                >
+                                  Custom Status
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    )}
 
       {activeTab === 'settings' && (
         <div style={{ maxWidth: '500px', margin: '0 auto' }}>
