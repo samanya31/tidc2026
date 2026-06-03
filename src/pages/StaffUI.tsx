@@ -758,7 +758,7 @@ const StaffUI = () => {
           </div>
 
           {/* Results List */}
-          <div className="table-container" style={{ maxHeight: '600px', overflowY: 'auto' }}>
+          <div className="table-container" style={{ maxHeight: '600px', overflowY: 'auto', overflowX: 'auto' }}>
             <div style={{ padding: '1.25rem 1.5rem', background: '#faf5ff', borderBottom: '2px solid #e9d5ff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
                 Published Results ({results.length})
