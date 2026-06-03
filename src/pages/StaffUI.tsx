@@ -50,6 +50,19 @@ const StaffUI = () => {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [studentSearchTerm, setStudentSearchTerm] = useState('');
 
+  // Manual add student modal state
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newStudentName, setNewStudentName] = useState('');
+  const [newStudentCategory, setNewStudentCategory] = useState('');
+  const [newStudentSubcategory, setNewStudentSubcategory] = useState('');
+  const [newStudentBace, setNewStudentBace] = useState('');
+  const [newStudentMobile, setNewStudentMobile] = useState('');
+  const [newStudentWhatsapp, setNewStudentWhatsapp] = useState('');
+  const [newStudentEmail, setNewStudentEmail] = useState('');
+  const [addModalError, setAddModalError] = useState('');
+  const [addModalSuccess, setAddModalSuccess] = useState('');
+  const [addModalLoading, setAddModalLoading] = useState(false);
+
   // Settings state
   const [settingsDeadline, setSettingsDeadline] = useState('');
   const [settingsLoading, setSettingsLoading] = useState(false);
@@ -242,6 +255,65 @@ const StaffUI = () => {
       setUploadError(err.message || 'Failed to publish result.');
     } finally {
       setUploadLoading(false);
+    }
+  };
+
+  const handleAddManualStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStudentName || !newStudentCategory || !newStudentBace) {
+      setAddModalError('Please fill in Name, Category and BACE Center.');
+      return;
+    }
+
+    setAddModalLoading(true);
+    setAddModalError('');
+    setAddModalSuccess('');
+
+    try {
+      // Build category string (e.g. "Acting (Group)" or "Instrument Playing (Mridanga)")
+      const categoryString = newStudentSubcategory 
+        ? `${newStudentCategory} (${newStudentSubcategory})`
+        : newStudentCategory;
+
+      const { error } = await supabase
+        .from('tidc_registrations')
+        .insert([{
+          full_name: newStudentName,
+          category: categoryString,
+          base_name: newStudentBace,
+          mobile_number: newStudentMobile || 'Manual',
+          whatsapp_number: newStudentWhatsapp || '',
+          email: newStudentEmail || 'manual@example.com',
+          dob: '',
+          city_state: 'Manual',
+          participated_before: 'none',
+          winner_last_year: 'no',
+          categories_won: [],
+          participated_last_year: 'no'
+        }]);
+
+      if (error) throw error;
+
+      setAddModalSuccess('Student registered successfully!');
+      fetchRegistrations();
+      
+      // Reset form and close modal after 1.5s
+      setTimeout(() => {
+        setShowAddModal(false);
+        setNewStudentName('');
+        setNewStudentCategory('');
+        setNewStudentSubcategory('');
+        setNewStudentBace('');
+        setNewStudentMobile('');
+        setNewStudentWhatsapp('');
+        setNewStudentEmail('');
+        setAddModalSuccess('');
+      }, 1500);
+
+    } catch (err: any) {
+      setAddModalError(err.message || 'Failed to add student.');
+    } finally {
+      setAddModalLoading(false);
     }
   };
 
@@ -664,6 +736,25 @@ const StaffUI = () => {
                 <option value="category">Category (A-Z)</option>
                 <option value="name">Name (A-Z)</option>
               </select>
+            </div>
+
+            <div style={{ marginLeft: 'auto' }}>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="btn-primary"
+                style={{
+                  padding: '0.6rem 1.25rem',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  height: '42px',
+                  boxShadow: '0 4px 12px rgba(147, 51, 234, 0.15)'
+                }}
+              >
+                ➕ Add Student
+              </button>
             </div>
           </div>
 
@@ -1100,6 +1191,188 @@ const StaffUI = () => {
               >
                 {settingsLoading ? 'Saving Settings...' : '💾 Save Settings'}
               </button>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Manual Add Student Modal */}
+      {showAddModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(59, 7, 100, 0.4)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          padding: '1rem',
+          animation: 'fadeIn 0.25s ease'
+        }}>
+          <div className="field-card" style={{
+            width: '100%',
+            maxWidth: '500px',
+            margin: 0,
+            background: 'white',
+            borderRadius: '16px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            border: '1px solid #e9d5ff',
+            padding: '2rem'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #f3e8ff', paddingBottom: '0.75rem' }}>
+              <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.4rem', fontWeight: 700, margin: 0 }}>
+                ➕ Add Physical Participant
+              </h3>
+              <button 
+                onClick={() => setShowAddModal(false)}
+                style={{ background: 'none', border: 'none', fontSize: '1.5rem', color: '#6b21a8', cursor: 'pointer', fontWeight: 700 }}
+              >
+                &times;
+              </button>
+            </div>
+
+            {addModalError && <div className="message-box message-error" style={{ marginBottom: '1rem' }}>⚠️ {addModalError}</div>}
+            {addModalSuccess && <div className="message-box message-success" style={{ marginBottom: '1rem' }}>✅ {addModalSuccess}</div>}
+
+            <form onSubmit={handleAddManualStudent} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b21a8', marginBottom: '0.25rem' }}>
+                  Student Full Name *
+                </label>
+                <input 
+                  type="text" 
+                  className="field-input"
+                  value={newStudentName}
+                  onChange={(e) => setNewStudentName(e.target.value)}
+                  placeholder="Enter full name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b21a8', marginBottom: '0.25rem' }}>
+                  BACE Center *
+                </label>
+                <select 
+                  className="field-select"
+                  value={newStudentBace}
+                  onChange={(e) => setNewStudentBace(e.target.value)}
+                  required
+                >
+                  <option value="" disabled>Choose BACE Center</option>
+                  {baceOptions.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b21a8', marginBottom: '0.25rem' }}>
+                  Category *
+                </label>
+                <select 
+                  className="field-select"
+                  value={newStudentCategory}
+                  onChange={(e) => {
+                    setNewStudentCategory(e.target.value);
+                    setNewStudentSubcategory('');
+                  }}
+                  required
+                >
+                  <option value="" disabled>Choose Category</option>
+                  {categoryOptions.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Conditional Subcategory Select */}
+              {newStudentCategory === 'Acting' && (
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b21a8', marginBottom: '0.25rem' }}>
+                    Acting Type
+                  </label>
+                  <select 
+                    className="field-select"
+                    value={newStudentSubcategory}
+                    onChange={(e) => setNewStudentSubcategory(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>Choose Type</option>
+                    <option value="Solo">Solo</option>
+                    <option value="Group">Group</option>
+                  </select>
+                </div>
+              )}
+
+              {newStudentCategory === 'Instrument Playing' && (
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b21a8', marginBottom: '0.25rem' }}>
+                    Instrument Type
+                  </label>
+                  <select 
+                    className="field-select"
+                    value={newStudentSubcategory}
+                    onChange={(e) => setNewStudentSubcategory(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>Choose Instrument</option>
+                    <option value="Mridanga">Mridanga</option>
+                    <option value="Kartal or Wompher">Kartal or Wompher</option>
+                    <option value="Keypad">Keypad</option>
+                    <option value="Octapad">Octapad</option>
+                    <option value="Flute">Flute</option>
+                    <option value="Harmonium">Harmonium</option>
+                    <option value="Guitar">Guitar</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              )}
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b21a8', marginBottom: '0.25rem' }}>
+                  Mobile Number (Optional)
+                </label>
+                <input 
+                  type="tel" 
+                  className="field-input"
+                  value={newStudentMobile}
+                  onChange={(e) => setNewStudentMobile(e.target.value)}
+                  placeholder="e.g. 9876543210"
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button 
+                  type="button" 
+                  className="btn-danger" 
+                  onClick={() => setShowAddModal(false)}
+                  style={{
+                    flex: 1,
+                    padding: '0.75rem',
+                    background: '#fee2e2',
+                    color: '#b91c1c',
+                    border: '1px solid #fca5a5',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    textAlign: 'center'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn-primary" 
+                  style={{ flex: 2, padding: '0.75rem' }}
+                  disabled={addModalLoading}
+                >
+                  {addModalLoading ? 'Saving...' : '💾 Save Student'}
+                </button>
+              </div>
             </form>
           </div>
         </div>
