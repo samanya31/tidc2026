@@ -284,7 +284,7 @@ const StaffUI = () => {
     }
   };
 
-  const getSelectableStudents = () => {
+  const getCategoryStudents = () => {
     if (!selectedCategory) return [];
     
     let list = [];
@@ -303,6 +303,30 @@ const StaffUI = () => {
       list = registrations.filter(reg => round2StudentIds.includes(reg.id));
     }
 
+    // Sort alphabetically by full_name
+    list.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''));
+    return list;
+  };
+
+  const categoryStudents = getCategoryStudents();
+
+  const getSelectableStudents = () => {
+    if (!selectedCategory) return [];
+    
+    let list = [];
+    if (selectedRound === 'Round 2') {
+      // Return all registered students
+      list = [...registrations];
+    } else {
+      // Return all students who have been qualified for Round 2 in any category
+      const round2StudentIds = results
+        .filter(res => res.round === 'Round 2')
+        .map(res => res.registration_id);
+      
+      // Get the registration details for these students
+      list = registrations.filter(reg => round2StudentIds.includes(reg.id));
+    }
+
     if (studentSearchTerm) {
       const search = studentSearchTerm.toLowerCase();
       list = list.filter(reg => 
@@ -311,6 +335,9 @@ const StaffUI = () => {
         (reg.base_name && reg.base_name.toLowerCase().includes(search))
       );
     }
+
+    // Sort alphabetically by full_name
+    list.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''));
 
     return list;
   };
@@ -896,7 +923,7 @@ const StaffUI = () => {
             <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.4rem', fontWeight: 700, marginBottom: '1rem', borderBottom: '1px solid #f3e8ff', paddingBottom: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span>📋 Candidates for {selectedCategory} ({selectedRound})</span>
               <span style={{ fontSize: '0.9rem', color: '#6b21a8', fontWeight: 500 }}>
-                Total Candidates: {selectableStudents.length}
+                Total Candidates: {categoryStudents.length}
               </span>
             </h3>
 
@@ -912,14 +939,14 @@ const StaffUI = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {selectableStudents.length === 0 ? (
+                  {categoryStudents.length === 0 ? (
                     <tr>
                       <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: '#6b21a8' }}>
-                        No candidates found matching the filters.
+                        No candidates found matching this category.
                       </td>
                     </tr>
                   ) : (
-                    selectableStudents.map((student) => {
+                    categoryStudents.map((student) => {
                       const existingResult = results.find(
                         r => r.registration_id === student.id && 
                              r.category === selectedCategory && 
