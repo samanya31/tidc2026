@@ -56,7 +56,7 @@ const StaffUI = () => {
   const [settingsError, setSettingsError] = useState('');
 
   const categoryOptions = [
-    'Bhajan', 'Speech', 'Sloka Recitation', 'Instrument Playing',
+    'Dance', 'Bhajan', 'Speech', 'Sloka Recitation', 'Instrument Playing',
     'Acting', 'Poem', 'Story Telling', 'Painting', 'Video Making'
   ];
 
@@ -770,7 +770,6 @@ const StaffUI = () => {
                 <tr>
                   <th>Student</th>
                   <th>BACE</th>
-                  <th>Category</th>
                   <th>Round</th>
                   <th>Status</th>
                   <th>Action</th>
@@ -779,13 +778,13 @@ const StaffUI = () => {
               <tbody>
                 {resultsLoading && results.length === 0 ? (
                   <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
+                    <td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
                       Loading results...
                     </td>
                   </tr>
                 ) : results.length === 0 ? (
                   <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
+                    <td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
                       No results published yet.
                     </td>
                   </tr>
@@ -794,9 +793,6 @@ const StaffUI = () => {
                     <tr key={res.id}>
                       <td style={{ fontWeight: 500 }}>{res.student_name}</td>
                       <td>{res.bace || 'N/A'}</td>
-                      <td>
-                        <span className="badge badge-purple">{res.category}</span>
-                      </td>
                       <td>
                         <span className="badge" style={{ background: res.round === 'Final Round' ? '#fdf2f8' : '#faf5ff', color: res.round === 'Final Round' ? '#db2777' : '#6b21a8', border: res.round === 'Final Round' ? '1px solid #fbcfe8' : '1px solid #e9d5ff', fontWeight: 600 }}>{res.round}</span>
                       </td>

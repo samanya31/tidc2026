@@ -192,7 +192,7 @@ const RegistrationForm = () => {
   };
 
   const categoryOptions = [
-    'Bhajan', 'Speech', 'Sloka Recitation', 'Instrument Playing',
+    'Dance', 'Bhajan', 'Speech', 'Sloka Recitation', 'Instrument Playing',
     'Acting', 'Poem', 'Story Telling', 'Painting', 'Video Making'
   ];
 
