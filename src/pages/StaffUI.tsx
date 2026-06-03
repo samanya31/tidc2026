@@ -48,6 +48,7 @@ const StaffUI = () => {
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [studentSearchTerm, setStudentSearchTerm] = useState('');
 
   // Settings state
   const [settingsDeadline, setSettingsDeadline] = useState('');
@@ -249,9 +250,10 @@ const StaffUI = () => {
   const getSelectableStudents = () => {
     if (!selectedCategory) return [];
     
+    let list = [];
     if (selectedRound === 'Round 2') {
       // Return students who registered for this category
-      return registrations.filter(reg => 
+      list = registrations.filter(reg => 
         reg.category?.toLowerCase().includes(selectedCategory.toLowerCase())
       );
     } else {
@@ -261,8 +263,19 @@ const StaffUI = () => {
         .map(res => res.registration_id);
       
       // Get the registration details for these students
-      return registrations.filter(reg => round2StudentIds.includes(reg.id));
+      list = registrations.filter(reg => round2StudentIds.includes(reg.id));
     }
+
+    if (studentSearchTerm) {
+      const search = studentSearchTerm.toLowerCase();
+      list = list.filter(reg => 
+        reg.full_name?.toLowerCase().includes(search) ||
+        reg.id.toString().includes(search) ||
+        (reg.base_name && reg.base_name.toLowerCase().includes(search))
+      );
+    }
+
+    return list;
   };
 
   const selectableStudents = getSelectableStudents();
@@ -666,6 +679,7 @@ const StaffUI = () => {
                   onChange={(e) => {
                     setSelectedCategory(e.target.value);
                     setSelectedRegId('');
+                    setStudentSearchTerm('');
                     setUploadError('');
                     setUploadSuccess(false);
                   }}
@@ -688,6 +702,7 @@ const StaffUI = () => {
                   onChange={(e) => {
                     setSelectedRound(e.target.value as 'Round 2' | 'Final Round');
                     setSelectedRegId('');
+                    setStudentSearchTerm('');
                     setUploadError('');
                     setUploadSuccess(false);
                   }}
@@ -696,6 +711,20 @@ const StaffUI = () => {
                   <option value="Round 2">Round 2</option>
                   <option value="Final Round">Final Round</option>
                 </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b21a8', marginBottom: '0.5rem' }}>
+                  Filter Student List by Name/ID
+                </label>
+                <input
+                  type="text"
+                  className="field-input"
+                  placeholder="Type name or ID to filter selection..."
+                  value={studentSearchTerm}
+                  onChange={(e) => setStudentSearchTerm(e.target.value)}
+                  style={{ marginBottom: '0.75rem', height: '36px', fontSize: '0.85rem' }}
+                />
               </div>
 
               <div>
@@ -717,8 +746,8 @@ const StaffUI = () => {
                     {!selectedCategory 
                       ? 'Choose category first' 
                       : selectedRound === 'Round 2'
-                      ? `Select student (${selectableStudents.length} registered)`
-                      : `Select student (${selectableStudents.length} qualified from Round 2)`
+                      ? `Select student (${selectableStudents.length} found)`
+                      : `Select student (${selectableStudents.length} found from Round 2)`
                     }
                   </option>
                   {selectableStudents.map(student => (
