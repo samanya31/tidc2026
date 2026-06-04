@@ -1,0 +1,152 @@
+WITH new_rows(student_name, bace, mobile, category, marks, rnk, qualified_flag) AS (
+VALUES
+  ('Anjaneya Das', 'Nadia', '7439791062', 'Bhajan', NULL, 1, 'yes'),
+  ('Shradhanshu Chaudhary', 'Nadia', '8982301118', 'Bhajan', NULL, 2, 'yes'),
+  ('Deepak Wadhwa', 'Nadia', '9056313350', 'Instrument  (Keyboard)', NULL, 1, 'yes'),
+  ('Pusker', 'Nadia', NULL, 'Instrument (Banjo)', NULL, 2, 'yes'),
+  ('Suyash', 'Nadia', NULL, 'Story Telling', NULL, 2, 'yes'),
+  ('Anjaneya Das', 'Nadia', '7439791062', 'Story Telling', NULL, 1, 'yes'),
+  ('Suyash', 'Nadia', NULL, 'Acting', NULL, 1, 'yes'),
+  ('Pusker', 'Nadia', NULL, 'Shloka', NULL, 2, 'yes'),
+  ('Umesh', 'Nadia', NULL, 'Shloka', NULL, 1, 'yes'),
+  ('Shradhanshu Chaudhary', 'Nadia', '8982301118', 'Speech', NULL, 1, 'yes'),
+  ('Ritika', 'Nadia', NULL, 'Acting', NULL, 2, 'yes'),
+  ('Ritika', 'Nadia', NULL, 'Bhajan', NULL, 2, 'yes'),
+  ('Shikha mtji Taniya & Team', 'Nadia', NULL, 'Acting', NULL, 2, 'yes'),
+  ('Twinkle Saxena', 'Ekchakra', '8058099171', 'Dance', NULL, 1, 'yes'),
+  ('Prashvi Sindwani', 'Ekchakra', '7503572450', 'Bhajan', NULL, 1, 'yes'),
+  ('Sweta Pandey', 'Ekchakra', '9315225949', 'Bhajan', NULL, 2, 'yes'),
+  ('Prashvi Sindwani', 'Ekchakra', '7503572450', 'Instrument', NULL, 1, 'yes'),
+  ('Ayush yadav', 'Ekchakra', '9958618865', 'Painting', NULL, 2, 'yes'),
+  ('Dilip Prusty', 'Ekchakra', '8377903667', 'Painting', NULL, 1, 'yes'),
+  ('Ananya Jha', 'Ekchakra', '7065989594', 'Shloka', NULL, 1, 'yes'),
+  ('Saligrama Sevka Das', 'Ekchakra', '9717276972', 'Shloka', NULL, 2, 'yes'),
+  ('Piyush Kumar', 'Ekchakra', '9818892107', 'Speech', NULL, 1, 'yes'),
+  ('Bhanu', 'Badrinath', '9873895658', 'Shloka', NULL, 1, 'yes'),
+  ('Saurabh', 'Badrinath', '7903405320', 'Video making', NULL, 1, 'yes'),
+  ('Bhanu', 'Badrinath', '9873895658', 'Bhajan', NULL, 1, 'yes'),
+  ('Gudiya', 'Badrinath', '9873895658', 'Painting', NULL, 1, 'yes'),
+  ('Naitik', 'Badrinath', '+91 79824 45166', 'Painting', NULL, 2, 'yes'),
+  ('Shiv Shankar', 'Badrinath', '8287679038', 'Story Telling', NULL, 1, 'yes'),
+  ('Krishna Abhay & Team', 'Badrinath', '80106 38336', 'Acting', NULL, 1, 'yes'),
+  ('Gudiya', 'Badrinath', '9873895658', 'Dance', NULL, 1, 'yes'),
+  ('Nikita', 'Badrinath', '8130116168', 'Dance', NULL, 2, 'yes'),
+  ('Navya Sharma', 'Mayapur', '8583822204', 'Dance', NULL, 1, 'yes'),
+  ('Chetan', 'Mayapur', '9319932679', 'Bhajan', NULL, 2, 'yes'),
+  ('Nikhil Sharma', 'Mayapur', '7011320282', 'Bhajan', NULL, 1, 'yes'),
+  ('Hariom Sharma', 'Mayapur', '8873456625', 'Shloka', NULL, 1, 'yes'),
+  ('Nihal Singh', 'Mayapur', '9711931543', 'Acting', NULL, 1, 'yes'),
+  ('Ajay Kumar Paswan', 'Mayapur', '8076430054', 'Acting', NULL, 1, 'yes'),
+  ('Sujal Gupta', 'Mayapur', '7290905647', 'Painting', NULL, 1, 'yes'),
+  ('Siddhant', 'Mayapur', '7290905647', 'Story Telling', NULL, 1, 'yes'),
+  ('Nihal Singh', 'Mayapur', '9711931543', 'Story Telling', NULL, 1, 'yes'),
+  ('Devadev nitai das', 'Mayapur', '9871917321', 'Painting', NULL, 1, 'yes'),
+  ('Praveen Kumar Jha', 'Mamgachchi', '8766307635', 'Bhajan', NULL, 1, 'yes'),
+  ('Ranjan Kumar', 'Mamgachchi', '9654346943', 'Poem', NULL, 1, 'yes'),
+  ('Sarthak Mamgain', 'Mamgachchi', '8506040435', 'Poem', NULL, 2, 'yes'),
+  ('Rudra', 'Mamgachchi', NULL, 'Speech', NULL, 2, 'yes'),
+  ('Sarthak Mamgain', 'Mamgachchi', '8506040435', 'Speech', NULL, 1, 'yes'),
+  ('Rohnit Bhardwaj', 'Mamgachchi', '8882823377', 'Story Telling', NULL, 1, 'yes'),
+  ('manoj kumar', 'Mamgachchi', '9868001805', 'Video making', NULL, 1, 'yes'),
+  ('Dhruv', 'Ayodhya', '+91 96256 74939', 'Bhajan', NULL, 1, 'yes'),
+  ('Diya Negi', 'Ayodhya', '7683002402', 'Video making', NULL, 1, 'yes'),
+  ('Syamsundar Saran Das', 'Ayodhya', '9871024241', 'Poem', NULL, 1, 'yes'),
+  ('Satish', 'Ayodhya', '93545 96199', 'Story Telling', NULL, 2, 'yes'),
+  ('Manav/ Shubham/Dhruv /Kaushal/Saksham', 'Ayodhya', '8744925047', 'Instrument ( Mridanga)', NULL, 1, 'yes'),
+  ('Anand', 'Ayodhya', '9871472300', 'Painting', NULL, 1, 'yes'),
+  ('Ayushman Tiwari', 'Ayodhya', '8178731230', 'Painting', NULL, 1, 'yes'),
+  ('Kaushal', 'Ayodhya', '9540579961', 'Shloka', NULL, 1, 'yes'),
+  ('Saksham', 'Ayodhya', '8744925047', 'Speech', NULL, 2, 'yes'),
+  ('Rahul Roy', 'Ayodhya', '9999912228', 'Speech', NULL, 1, 'yes'),
+  ('Indu Verma', 'Ayodhya', '+91 98990 79380', 'Story Telling', NULL, 1, 'yes'),
+  ('Satish', 'Ayodhya', '93545 96199', 'Poem', NULL, 1, 'yes'),
+  ('Manish', 'Ayodhya', '99997 71179', 'Story Telling', NULL, 2, 'yes'),
+  ('Vansh', 'Mathura', '836 859 5747', 'Story Telling', NULL, 1, 'yes'),
+  ('Aaradhya', 'Mathura', '98109 67858', 'Dance', NULL, 1, 'yes'),
+  ('Pawan', 'Mathura', '96540 90380', 'Instrument( Flute)', NULL, 1, 'yes'),
+  ('Priyanka', 'Mathura', '88513 74320', 'Bhajan', NULL, 1, 'yes'),
+  ('Prakash palli', 'Goverdhan', '9667286457', 'Bhajan', NULL, 1, 'yes'),
+  ('Jayram', 'Goverdhan', '7366811813', 'Bhajan', NULL, 2, 'yes'),
+  ('Sakshi Singhal', 'Goverdhan', '9560755900', 'Dance', NULL, 1, 'yes'),
+  ('Anil', 'Goverdhan', NULL, 'Dance', NULL, 2, 'yes'),
+  ('Ramaansh  chauhan', 'Goverdhan', '9873622016', 'Instrument (Harmonium)', NULL, 1, 'yes'),
+  ('Krishna Sharma', 'Goverdhan', '9953781102', 'Poem', NULL, 1, 'yes'),
+  ('Biswambhar Das', 'Goverdhan', '9910653229', 'Poem', NULL, 2, 'yes'),
+  ('Paramhamsa', 'Goverdhan', '9953491828', 'Shloka', NULL, 1, 'yes'),
+  ('Sakshi Singhal', 'Goverdhan', '9560755900', 'Shloka', NULL, 2, 'yes'),
+  ('Parth Singhal', 'Goverdhan', '9560755900', 'Shloka', NULL, 2, 'yes'),
+  ('Biswambhar Das', 'Goverdhan', '9910653229', 'Speech', NULL, 2, 'yes'),
+  ('Krrtika', 'Goverdhan', NULL, 'Video making', NULL, 1, 'yes'),
+  ('Prakash palli', 'Goverdhan', '9667286457', 'Acting', NULL, 1, 'yes'),
+  ('Pulkit', 'Goverdhan', NULL, 'Painting', NULL, 1, 'yes'),
+  ('Sarvamangalmayi madhvi dd', 'Shantipur', NULL, 'Dance', NULL, 1, 'yes'),
+  ('Ishant Jaiswal', 'Shantipur', NULL, 'Bhajan', NULL, 1, 'yes'),
+  ('Laxmi ,lavanya, laghuradha', 'Shantipur', NULL, 'Bhajan', NULL, 2, 'yes'),
+  ('Laxmi ,lavanya, laghuradha', 'Shantipur', NULL, 'Shloka', NULL, 2, 'yes'),
+  ('Diksha Gaur', 'Shantipur', NULL, 'Shloka', NULL, 1, 'yes'),
+  ('shruty sinha', 'Shantipur', NULL, 'Shloka', NULL, 2, 'yes'),
+  ('Hari kishan', 'Shantipur', NULL, 'Poem', NULL, 1, 'yes'),
+  ('Divya', 'Shantipur', NULL, 'Poem', NULL, 2, 'yes'),
+  ('Laxmi ,lavanya, laghuradha', 'Shantipur', NULL, 'Painting', NULL, 1, 'yes'),
+  ('Pratima Shukla', 'Shantipur', NULL, 'Video making', NULL, 1, 'yes'),
+  ('Abhay Sandipani Pr', 'Shantipur', NULL, 'Speech', NULL, 1, 'yes'),
+  ('Himanshu Singh', 'Shantipur', NULL, 'Story Telling', NULL, 1, 'yes'),
+  ('Abhay Sandipani Pr', 'Shantipur', NULL, 'Story Telling', NULL, 2, 'yes'),
+  ('Sneha Ghosh', 'GovindDham', '7811054488', 'Dance', NULL, 1, 'yes'),
+  ('Premraj', 'GovindDham', '7610410987', 'Story Telling', NULL, 1, 'yes'),
+  ('Ayushi Chauhan', 'GovindDham', '7859047162', 'Story Telling', NULL, 2, 'yes'),
+  ('Neelam Sarkar', 'Tughlakabad', '9873326211', 'Bhajan', NULL, 1, 'yes'),
+  ('Ravi Kumar', 'Tughlakabad', '7827188834', 'Instrument', NULL, 1, 'yes'),
+  ('Anuradha', 'Tughlakabad', '95996 86401', 'Painting', NULL, 1, 'yes'),
+  ('Devansh', 'Tughlakabad', '9990062139', 'Painting', NULL, 2, 'yes'),
+  ('Vanshita Pandey', 'Tughlakabad', '9958957577', 'Speech', NULL, 1, 'yes'),
+  ('Jay', 'Tughlakabad', '9625406858', 'Video making', NULL, 1, 'yes'),
+  ('Satyam Kumar Singh', 'Tughlakabad', '7827528729', 'Video making', NULL, 1, 'yes'),
+  ('Sakshi & Aryan', 'Tughlakabad', '9821596671', 'Acting', NULL, 1, 'yes'),
+  ('Kavya Sharma', 'Srivasangan', '9311444784', 'Dance', NULL, 1, 'yes'),
+  ('Dev Gupta', 'Srivasangan', '9310950273', 'Bhajan', NULL, 1, 'yes'),
+  ('Harshil Kalra', 'Srivasangan', '8287659920', 'Bhajan', NULL, 1, 'yes'),
+  ('HG Rupanuga Das', 'Srivasangan', '8929468880', 'Poem', NULL, 1, 'yes'),
+  ('Yashika Sharma', 'Srivasangan', '9311444784', 'Poem', NULL, 1, 'yes'),
+  ('Yashika Sharma', 'Srivasangan', '9311444784', 'Painting', NULL, 1, 'yes'),
+  ('Vansh', 'Srivasangan', '8447450070', 'Painting', NULL, 2, 'yes'),
+  ('Shanchita', 'Srivasangan', '8377840413', 'Shloka', NULL, 1, 'yes'),
+  ('Chinmaya Das', 'Srivasangan', '9910271330', 'Speech', NULL, 1, 'yes'),
+  ('Harshil Kalra', 'Srivasangan', '8287659920', 'Speech', NULL, 2, 'yes'),
+  ('Ujjvala Gauranga Das', 'Srivasangan', '8178306039', 'Video making', NULL, 1, 'yes'),
+  ('Priyam', 'Dounkor', '7906692214', 'Shloka', NULL, 1, 'yes'),
+  ('Janvi Mata', 'Dounkor', '8954473542', 'Dance', NULL, 1, 'yes'),
+  ('Piyush', 'Dounkor', '9835513714', 'Story Telling', NULL, 1, 'yes')
+)
+INSERT INTO tidc_results (registration_id, student_name, bace, category, round, status)
+SELECT
+  r.id,
+  n.student_name,
+  n.bace,
+  n.category,
+  'Round 2' AS round,
+  CASE
+    WHEN n.rnk = 1 THEN 'Winner'
+    WHEN n.rnk = 2 THEN 'Runner-up'
+    WHEN n.rnk >= 3 THEN 'Qualified'
+    ELSE 'Qualified'
+  END AS status
+FROM new_rows n
+LEFT JOIN tidc_registrations r
+  ON (trim(lower(r.full_name)) = trim(lower(n.student_name)))
+     OR (r.mobile_number IS NOT NULL AND r.mobile_number = n.mobile)
+WHERE lower(n.qualified_flag) = 'yes'
+  AND NOT EXISTS (
+    SELECT 1 FROM tidc_results t
+    WHERE (
+      r.id IS NOT NULL
+      AND t.registration_id = r.id
+      AND t.category = n.category
+      AND t.round = 'Round 2'
+    ) OR (
+      r.id IS NULL
+      AND t.student_name = n.student_name
+      AND t.category = n.category
+      AND t.round = 'Round 2'
+    )
+  );

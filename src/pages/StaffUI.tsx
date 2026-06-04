@@ -426,6 +426,10 @@ const StaffUI = () => {
 
   const resultCategories = Object.keys(resultsByCategory).sort();
 
+  resultCategories.forEach(cat => {
+    resultsByCategory[cat].sort((a: any, b: any) => (a.student_name || '').localeCompare(b.student_name || ''));
+  });
+
   const sortedAndFilteredRegistrations = registrations
     .filter(reg => {
       const matchesSearch = reg.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -950,16 +954,17 @@ const StaffUI = () => {
           </div>
 
           {/* Results List */}
-          <div className="table-container" style={{ maxHeight: '600px', overflowY: 'auto', overflowX: 'auto' }}>
+          <div className="table-container" style={{ maxHeight: '600px', overflow: 'auto', minWidth: '860px' }}>
             <div style={{ padding: '1.25rem 1.5rem', background: '#faf5ff', borderBottom: '2px solid #e9d5ff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
                 Published Results ({results.length})
               </h3>
             </div>
             
-            <table className="data-table" style={{ width: '100%' }}>
+            <table className="data-table" style={{ minWidth: '860px' }}>
               <thead>
                 <tr>
+                  <th style={{ width: '56px' }}>No.</th>
                   <th>Student</th>
                   <th>BACE</th>
                   <th>Round</th>
@@ -970,13 +975,13 @@ const StaffUI = () => {
               <tbody>
                 {resultsLoading && results.length === 0 ? (
                   <tr>
-                    <td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
+                    <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
                       Loading results...
                     </td>
                   </tr>
                 ) : results.length === 0 ? (
                   <tr>
-                    <td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
+                    <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
                       No results published yet.
                     </td>
                   </tr>
@@ -984,12 +989,13 @@ const StaffUI = () => {
                   resultCategories.map((cat) => (
                     <React.Fragment key={cat}>
                       <tr style={{ background: '#f5f3ff' }}>
-                        <td colSpan={5} style={{ fontWeight: 700, color: '#4c1d95', padding: '0.65rem 1rem', fontSize: '0.85rem' }}>
+                        <td colSpan={6} style={{ fontWeight: 700, color: '#4c1d95', padding: '0.65rem 1rem', fontSize: '0.85rem' }}>
                           📁 {cat} ({resultsByCategory[cat].length})
                         </td>
                       </tr>
-                      {resultsByCategory[cat].map((res: any) => (
+                      {resultsByCategory[cat].map((res: any, idx: number) => (
                         <tr key={res.id}>
+                          <td style={{ textAlign: 'right', paddingRight: '1rem', fontWeight: 600 }}>#{idx + 1}</td>
                           <td style={{ fontWeight: 500, paddingLeft: '1.5rem' }}>{res.student_name}</td>
                           <td>{res.bace || 'N/A'}</td>
                           <td>
@@ -998,7 +1004,7 @@ const StaffUI = () => {
                           <td>
                             <span className="badge badge-amber">{res.status}</span>
                           </td>
-                          <td>
+                          <td style={{ whiteSpace: 'nowrap' }}>
                             <button
                               onClick={() => handleDeleteResult(res.id)}
                               style={{

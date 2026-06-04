@@ -1,0 +1,160 @@
+
+	TIDC -2026 Qualfy devotees list on the basis of cutoff marks in each below metion category
+Note-	If your name is not disply in this sheet it means you are not  qualify for round -2
+
+Bhajan 70%	Acting 80%	Dance 90%		instsrsument 80%					painting 80%
+Poem  75%	Shloka 75%	Speech 80%		Story 75%					Viedo 75%
+
+SN	BACE	Name of Devotee	Mob No	Category	Technical skills	Devotional  Skills	Total Judge 1	Total Judge 2	Marks in %( Average of all Judges)	Rank	Qualified for Round – 2
+1	Nadia	Anjaneya Das 	7439791062	Bhajan	47	47	94	93	93.5	1	yes
+2	Nadia	Shradhanshu Chaudhary	8982301118	Bhajan	46	46	92	94	93	2	yes
+3	Nadia	Deepak Wadhwa	9056313350	Instrument  (Keyboard)	45	45	90	85	87.5	1	yes
+4	Nadia	Pusker		Instrument (Banjo)	43	42	85	81	83	2	yes
+5	Nadia	Shudanshu		Story Telling	42	42	84	81	74	3	No
+5	Nadia	Suyash		Story Telling	40	41	81	88	84.5	2	yes
+6	Nadia	Anjaneya Das 	7439791062	Story Telling	43	42	85	86	85.5	1	yes
+7	Nadia	Suyash		Acting	48	49	97	96	96.5	1	yes
+8	Nadia	Pusker		Shloka	35	38	73	80	76.5	2	Yes
+10	Nadia	Anjaney		Shloka	20	25	45	65	55	3	No
+9	Nadia	Umesh		Shloka	47	48	95	100	97.5	1	yes
+10	Nadia	Shradhanshu Chaudhary	8982301118	Speech	45	44	89	82	85.5	1	yes
+	Nadia	Ritika		Acting			0			2	yes
+	Nadia	Ritika		Bhajan			0			2	yes
+11	Nadia	Shikha mtji Taniya & Team		Acting			0		85	2	yes
+13	Ekchakra	Loren		Dance	35	30	65		65	2	no
+12	Ekchakra	Twinkle Saxena	8058099171	Dance	45	45	90		90	1	yes
+13	Ekchakra	Prashvi Sindwani	7503572450	Bhajan	40	45	85		85	1	yes
+16	Ekchakra	Ram Ratan Sharma		Bhajan	15	20	35		35	3	no
+14	Ekchakra	Sweta Pandey	9315225949	Bhajan	40	40	80		80	2	yes
+15	Ekchakra	Prashvi Sindwani	7503572450	Instrument	45	45	90		90	1	yes
+16	Ekchakra	Ayush yadav	9958618865	Painting	45	45	90		90	2	yes
+17	Ekchakra	Dilip Prusty	8377903667	Painting	46	48	94		94	1	yes
+18	Ekchakra	Ananya Jha	7065989594	Shloka	45	45	90		90	1	yes
+22	Ekchakra	Archana Roy		Shloka	20	20	40		40	3	no
+23	Ekchakra	Diwakar Kumar		Shloka	15	20	35		35	4	no
+	Ekchakra	Shalani	9818892107	Dance			0
+19	Ekchakra	Saligrama Sevka Das	9717276972	Shloka	44	41	85		85	2	yes
+20	Ekchakra	Piyush Kumar	9818892107	Speech	45	45	90		90	1	yes
+21	Badrinath	Bhanu	9873895658	Shloka	45	45	90		90	1	yes
+22	Badrinath	Saurabh	7903405320	Video making	45	45	90		90	1	yes
+23	Badrinath	Bhanu	9873895658	Bhajan	45	45	90		90	1	yes
+29	Badrinath	Riya Juyal		Bhajan	35	34	69		69	2	NO
+30	Badrinath	Vishal		Instrument	35	30	65		65	1	NO
+24	Badrinath	Gudiya	9873895658	Painting	46	46	92		92	1	YES
+25	Badrinath	Naitik	+91 79824 45166	Painting	45	45	90		90	2	YES
+26	Badrinath	Shiv Shankar	8287679038	Story Telling			0		78	1	YES
+27	Badrinath	Krishna Abhay & Team	80106 38336	Acting			0		86	1	YES
+28	Badrinath	Gudiya	9873895658	Dance			0		91	1	yes
+29	Badrinath	Nikita	8130116168	Dance			0		90	2	yes
+30	Mayapur	Navya Sharma	8583822204	Dance	47	50	97		93	1	YES
+31	Mayapur	Chetan	9319932679	Bhajan	42	40	82		84	2	YES
+32	Mayapur	Nikhil Sharma	7011320282	Bhajan	47	44	91		86	1	YES
+37	Mayapur	Sidhant		Shloka	35	38	73		72	2	NO
+33	Mayapur	Hariom Sharma	8873456625	Shloka	40	40	80		80	1	YES
+34	Mayapur	Nihal Singh	9711931543	Acting	40	40	80		82	1	YES
+35	Mayapur	Ajay Kumar Paswan	8076430054	Acting	40	40	80		82	1	YES
+36	Mayapur	Sujal Gupta	7290905647	Painting	40	45	85		80	1	YES
+42	Mayapur	Ajay Kumar Paswan		Story Telling	35	37	72		71	3	NO
+37	Mayapur	Siddhant	7290905647	Story Telling	42	46	88		82	1	YES
+38	Mayapur	Nihal Singh	9711931543	Story Telling	40	40	80		82	1	YES
+	Mayapur	Devadev nitai das	9871917321	Painting			0		90	1	YES
+39	Mamgachchi	Praveen Kumar Jha	8766307635	Bhajan	40	30	70		70	1	YES
+40	Mamgachchi	Ranjan Kumar	9654346943	Poem	45	40	85		85	1	YES
+41	Mamgachchi	Sarthak Mamgain	8506040435	Poem	35	35	70		75	2	YES
+42	Mamgachchi	Rudra		Speech	40	40	80		80	2	YES
+43	Mamgachchi	Sarthak Mamgain	8506040435	Speech	45	40	85		85	1	YES
+44	Mamgachchi	Rohnit Bhardwaj	8882823377	Story Telling	35	40	75		75	1	YES
+51	Mamgachchi	Kriyansh Gupta		Story Telling	35	38	73		73	2	NO
+45	Mamgachchi	manoj kumar	9868001805	Video making	42	35	77		77	1	YES
+53	Mamgachchi			Video making	38	30	68		68	2	NO
+	Mamgachchi	Sajib Sarkar	6295338608	Video making			0		77	1	NO
+46	Ayodhya	Dhruv 	+91 96256 74939	Bhajan			0		0.83	1	yes
+47	Ayodhya	Diya Negi	7683002402	Video making			0		0.9	1	yes
+48	Ayodhya	Syamsundar Saran Das	9871024241	Poem			0		0.97	1	yes
+48	Ayodhya	Satish 	93545 96199	Story Telling			0		0.79	2	yes
+50	Ayodhya	Manav/ Shubham/Dhruv /Kaushal/Saksham	8744925047	Instrument ( Mridanga)			0		0.9	1	yes
+51	Ayodhya	Anand 	9871472300	Painting			0		0.86	1	yes
+52	Ayodhya	Ayushman Tiwari	8178731230	Painting			0		0.86	1	yes
+53	Ayodhya	Kaushal	9540579961	Shloka			0		0.88	1	yes
+54	Ayodhya	Saksham	8744925047	Speech			0		0.92	2	yes
+63	Ayodhya	Avantika 		Speech			0		0.78	3	no
+55	Ayodhya	Rahul Roy	9999912228	Speech			0		0.9267	1	yes
+56	Ayodhya	Indu Verma	+91 98990 79380	Story Telling			0		0.83	1	yes
+57	Ayodhya	Satish 	93545 96199	Poem			0		0.83	1	yes
+58	Ayodhya	Manish 	99997 71179	Story Telling			0		0.79	2	yes
+59	Mathura	Vansh	836 859 5747	Story Telling			0		0.91	1	yes
+60	Mathura	Aaradhya	98109 67858	Dance			0		0.91	1	yes
+61	Mathura	Pawan 	96540 90380	Instrument( Flute)			0		0.9	1	yes
+62	Mathura	Priyanka 	88513 74320	Bhajan			0		0.96	1	yes
+63	Goverdhan	Prakash palli	9667286457	Bhajan			0		93	1	yes
+64	Goverdhan	Jayram	7366811813	Bhajan			0		85	2	yes
+65	Goverdhan	Sakshi Singhal	9560755900	Dance			0		92.5	1	yes
+66	Goverdhan	Anil		Dance			0		92	2	YES
+	Goverdhan	Vedahi Sharma		Dance			0		86	3	NO
+67	Goverdhan	Ramaansh  chauhan 	9873622016	Instrument (Harmonium)			0		91	1	yes
+68	Goverdhan	Krishna Sharma	9953781102	Poem			0		96	1	yes
+69	Goverdhan	Biswambhar Das	9910653229	Poem			0		86	2	yes
+70	Goverdhan	Paramhamsa	9953491828	Shloka			0		97.5	1	yes
+71	Goverdhan	Sakshi Singhal	9560755900	Shloka			0		93.5	2	yes
+72	Goverdhan	Parth Singhal	9560755900	Shloka			0		93.5	2	yes
+73	Goverdhan	Biswambhar Das	9910653229	Speech			0		82.5	2	yes
+74	Goverdhan	Krrtika		Video making			0		89	1	yes
+75	Goverdhan	Prakash palli	9667286457	Acting			0		90	1	yes
+76	Goverdhan	Pulkit		Painting			0		85	1	yes
+77	Shantipur	Sarvamangalmayi madhvi dd		Dance			0		90	1	yes
+78	Shantipur	Ishant Jaiswal		Bhajan			0		85	1	yes
+79	Shantipur	Laxmi ,lavanya, laghuradha		Bhajan			0		75	2	yes
+80	Shantipur	Laxmi ,lavanya, laghuradha		Shloka			0		80	2	yes
+81	Shantipur	Diksha Gaur		Shloka			0		90	1	yes
+82	Shantipur	shruty sinha		Shloka			0		80	2	yes
+83	Shantipur	Hari kishan		Poem			0		90	1	yes
+84	Shantipur	Divya		Poem			0		85	2	yes
+85	Shantipur	Laxmi ,lavanya, laghuradha		Painting			0		80	1	yes
+86	Shantipur	Pratima Shukla		Video making			0		75	1	yes
+87	Shantipur	Abhay Sandipani Pr		Speech			0		80	1	yes
+88	Shantipur	Himanshu Singh		Story Telling			0		90	1	yes
+89	Shantipur	Abhay Sandipani Pr		Story Telling			0		80	2	yes
+90	GovindDham	Sneha Ghosh	7811054488	Dance					93	1	yes
+91	GovindDham	Premraj	7610410987	Story Telling					85	1	yes
+92	GovindDham	Ayushi Chauhan	7859047162	Story Telling					80	2	yes
+93	 Tughlakabad	Neelam Sarkar	9873326211	Bhajan					77.5	1	yes
+94	 Tughlakabad	Ravi Kumar	7827188834	Instrument					80	1	yes
+	 Tughlakabad	Saksham	8285299620	Speech
+95	 Tughlakabad	Anuradha	95996 86401	Painting					85	1	yes
+96	 Tughlakabad	Devansh	9990062139	Painting					80	2	yes
+97	 Tughlakabad	Vanshita Pandey	9958957577	Speech					80	1	yes
+98	 Tughlakabad	Jay	9625406858	Video making					75	1	yes
+99	 Tughlakabad	Satyam Kumar Singh	7827528729	Video making					75	1	yes
+100	 Tughlakabad	Sakshi & Aryan	9821596671	Acting					80	1	yes
+100	Srivasangan	Kavya Sharma	9311444784	Dance					90	1	yes
+101	Srivasangan	Dev Gupta	9310950273	Bhajan					85	1	yes
+102	Srivasangan	Harshil Kalra	8287659920	Bhajan					84	1	yes
+103	Srivasangan	HG Rupanuga Das	8929468880	Poem					87	1	yes
+104	Srivasangan	Yashika Sharma	9311444784	Poem					87	1	yes
+105	Srivasangan	Yashika Sharma	9311444784	Painting					85	1	yes
+106	Srivasangan	Vansh	8447450070	Painting					83	2	yes
+107	Srivasangan	Shanchita	8377840413	Shloka					80	1	yes
+108	Srivasangan	Chinmaya Das	9910271330	Speech					82	1	yes
+109	Srivasangan	Harshil Kalra	8287659920	Speech					82	2	yes
+110	Srivasangan	Ujjvala Gauranga Das	8178306039	Video making					75	1	yes
+111	Priyam	Dounkor	7906692214	Shloka					85	1	yes
+113	Keshav	Dounkor	9953871965	Shloka					80	2	yes
+115	Janvi Mata	Dounkor	8954473542	Dance					90	1	yes
+117	Piyush 	Dounkor	9835513714	Story Telling					80	1	yes
+
+
+
+
+
+
+
+
+
+	nadia dram	7876765027
+	tukalbad 	story
+	keshab chabara	9953871965		govind dham					dahnkaur
+	ndia bhajan  subal
+	aaksha poem dance
+	jaspal
+
+	sunny mansi kartal  dance  ekchakra
