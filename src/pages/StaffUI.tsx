@@ -988,7 +988,7 @@ const StaffUI = () => {
                           📁 {cat} ({resultsByCategory[cat].length})
                         </td>
                       </tr>
-                      {resultsByCategory[cat].map((res) => (
+                      {resultsByCategory[cat].map((res: any) => (
                         <tr key={res.id}>
                           <td style={{ fontWeight: 500, paddingLeft: '1.5rem' }}>{res.student_name}</td>
                           <td>{res.bace || 'N/A'}</td>
