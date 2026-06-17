@@ -259,7 +259,7 @@ const Results = () => {
                                       View Score Card
                                     </a>
                                   ) : (
-                                    <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>N/A</span>
+                                    <span style={{ color: '#9ca3af', fontSize: '0.85rem', fontStyle: 'italic' }}>Coming Soon</span>
                                   )}
                                 </td>
                               </>
