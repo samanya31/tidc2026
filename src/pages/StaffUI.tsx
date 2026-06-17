@@ -77,6 +77,7 @@ const StaffUI = () => {
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [studentSearchTerm, setStudentSearchTerm] = useState('');
+  const [editingResultId, setEditingResultId] = useState<number | null>(null);
 
   // Manual add student modal state
   const [showAddModal, setShowAddModal] = useState(false);
@@ -202,9 +203,12 @@ const StaffUI = () => {
       const student = registrations.find(r => r.id === Number(selectedRegId));
       if (!student) throw new Error('Selected student not found.');
 
-      // Check if student already has this result category and round
+      // Check if student already has this result category and round, excluding the editing record
       const alreadyPublished = results.some(
-        r => r.registration_id === student.id && r.category === selectedCategory && r.round === selectedRound
+        r => r.registration_id === student.id && 
+             r.category === selectedCategory && 
+             r.round === selectedRound &&
+             r.id !== editingResultId
       );
       if (alreadyPublished) {
         throw new Error(`${student.full_name} is already qualified/marked for category "${selectedCategory}" in ${selectedRound}.`);
@@ -218,26 +222,44 @@ const StaffUI = () => {
           })
         : resultStatus;
 
-      const { error } = await supabase
-        .from('tidc_results')
-        .insert([
-          {
+      if (editingResultId !== null) {
+        const { error } = await supabase
+          .from('tidc_results')
+          .update({
             registration_id: student.id,
             student_name: student.full_name,
             bace: student.base_name,
             category: selectedCategory,
             round: selectedRound,
             status: statusValue
-          }
-        ]);
+          })
+          .eq('id', editingResultId);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('tidc_results')
+          .insert([
+            {
+              registration_id: student.id,
+              student_name: student.full_name,
+              bace: student.base_name,
+              category: selectedCategory,
+              round: selectedRound,
+              status: statusValue
+            }
+          ]);
+
+        if (error) throw error;
+      }
 
       setUploadSuccess(true);
+      setEditingResultId(null);
       setSelectedRegId('');
       setMarksObtained('');
       setScorecardUrl('');
       setCustomStatus('');
+      setStudentSearchTerm('');
       fetchResults();
     } catch (err: any) {
       setUploadError(err.message || 'Failed to publish result.');
@@ -258,6 +280,61 @@ const StaffUI = () => {
     } catch (err: any) {
       alert(err.message || 'Failed to delete result.');
     }
+  };
+
+  const handleStartEdit = (res: any) => {
+    setUploadError('');
+    setUploadSuccess(false);
+    setEditingResultId(res.id);
+    setSelectedCategory(res.category || '');
+    setSelectedRound(res.round || 'Round 2');
+    setSelectedRegId(res.registration_id ? res.registration_id.toString() : '');
+    setStudentSearchTerm('');
+
+    const parsed = getParsedResult(res.status);
+    const statusVal = parsed.status || '';
+    
+    // Check if the status matches one of the standard options
+    const standardStatuses = [
+      'Qualified for Final Round',
+      'Waiting List – 90% Chance to Perform in the Final Round',
+      'Waiting List – 80% Chance to Perform in the Final Round',
+      'Prepare for Next TIDC -2027',
+      'Qualified',
+      '1st Place',
+      '2nd Place'
+    ];
+
+    if (standardStatuses.includes(statusVal)) {
+      setResultStatus(statusVal);
+      setCustomStatus('');
+    } else {
+      setResultStatus('Custom...');
+      setCustomStatus(statusVal);
+    }
+
+    setMarksObtained(parsed.marks || '');
+    setScorecardUrl(parsed.scorecard_url || '');
+
+    // Scroll the form into view if needed
+    const element = document.querySelector('.field-card');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingResultId(null);
+    setSelectedCategory('');
+    setSelectedRound('Round 2');
+    setSelectedRegId('');
+    setResultStatus('Qualified for Final Round');
+    setCustomStatus('');
+    setMarksObtained('');
+    setScorecardUrl('');
+    setStudentSearchTerm('');
+    setUploadError('');
+    setUploadSuccess(false);
   };
 
   const quickPublish = async (regId: number, fullName: string, baseName: string, status: string) => {
@@ -677,6 +754,7 @@ const StaffUI = () => {
             setUploadError('');
             setSettingsSuccess(false);
             setSettingsError('');
+            handleCancelEdit();
           }}
           style={{
             background: 'none',
@@ -700,6 +778,7 @@ const StaffUI = () => {
             setUploadError('');
             setSettingsSuccess(false);
             setSettingsError('');
+            handleCancelEdit();
           }}
           style={{
             background: 'none',
@@ -723,6 +802,7 @@ const StaffUI = () => {
             setUploadError('');
             setSettingsSuccess(false);
             setSettingsError('');
+            handleCancelEdit();
             fetchSettings();
           }}
           style={{
@@ -878,7 +958,7 @@ const StaffUI = () => {
           <div className="field-card" style={{ margin: 0 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #f3e8ff', paddingBottom: '0.75rem' }}>
               <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.4rem', fontWeight: 700, margin: 0 }}>
-                Publish Result
+                {editingResultId !== null ? '✏️ Edit Result' : 'Publish Result'}
               </h3>
               <button
                 type="button"
@@ -898,7 +978,7 @@ const StaffUI = () => {
             </div>
             
             {uploadError && <div className="message-box message-error" style={{ marginBottom: '1.25rem' }}>⚠️ {uploadError}</div>}
-            {uploadSuccess && <div className="message-box message-success" style={{ marginBottom: '1.25rem' }}>✅ Result published successfully!</div>}
+            {uploadSuccess && <div className="message-box message-success" style={{ marginBottom: '1.25rem' }}>✅ Result saved successfully!</div>}
             
             <form onSubmit={handlePublishResult} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div>
@@ -1059,14 +1139,30 @@ const StaffUI = () => {
                   onChange={(e) => setScorecardUrl(e.target.value)}
                 />
               </div>
-              <button
-                type="submit"
-                className="btn-primary"
-                style={{ width: '100%', padding: '0.75rem', justifyContent: 'center', fontWeight: 600, marginTop: '0.5rem' }}
-                disabled={uploadLoading || !selectedCategory || !selectedRegId}
-              >
-                {uploadLoading ? 'Publishing...' : '🚀 Publish Result'}
-              </button>
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                {editingResultId !== null && (
+                  <button
+                    type="button"
+                    className="btn-outline"
+                    onClick={handleCancelEdit}
+                    style={{ flex: 1, padding: '0.75rem', justifyContent: 'center', fontWeight: 600 }}
+                    disabled={uploadLoading}
+                  >
+                    Cancel
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  style={{ flex: editingResultId !== null ? 2 : 1, width: '100%', padding: '0.75rem', justifyContent: 'center', fontWeight: 600 }}
+                  disabled={uploadLoading || !selectedCategory || !selectedRegId}
+                >
+                  {uploadLoading 
+                    ? (editingResultId !== null ? 'Saving...' : 'Publishing...') 
+                    : (editingResultId !== null ? '💾 Save Changes' : '🚀 Publish Result')
+                  }
+                </button>
+              </div>
             </form>
           </div>
 
@@ -1124,6 +1220,22 @@ const StaffUI = () => {
                                 <span className="badge badge-amber">{res.status}</span>
                               </td>
                               <td style={{ whiteSpace: 'nowrap' }}>
+                                <button
+                                  onClick={() => handleStartEdit(res)}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: '#2563eb',
+                                    cursor: 'pointer',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 600,
+                                    textDecoration: 'underline',
+                                    padding: 0,
+                                    marginRight: '0.75rem'
+                                  }}
+                                >
+                                  Edit
+                                </button>
                                 <button
                                   onClick={() => handleDeleteResult(res.id)}
                                   style={{
@@ -1220,6 +1332,22 @@ const StaffUI = () => {
                                   )}
                                 </td>
                                 <td style={{ whiteSpace: 'nowrap' }}>
+                                  <button
+                                    onClick={() => handleStartEdit(res)}
+                                    style={{
+                                      background: 'none',
+                                      border: 'none',
+                                      color: '#2563eb',
+                                      cursor: 'pointer',
+                                      fontSize: '0.85rem',
+                                      fontWeight: 600,
+                                      textDecoration: 'underline',
+                                      padding: 0,
+                                      marginRight: '0.75rem'
+                                    }}
+                                  >
+                                    Edit
+                                  </button>
                                   <button
                                     onClick={() => handleDeleteResult(res.id)}
                                     style={{
