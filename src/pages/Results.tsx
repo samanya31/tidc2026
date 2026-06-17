@@ -30,6 +30,16 @@ const getParsedResult = (statusStr: string): ParsedResult => {
   return { status: statusStr || '' };
 };
 
+
+
+const getDisplayStatus = (statusStr: string) => {
+  if (!statusStr) return '';
+  return statusStr
+    .replace(/Final Round/g, 'Round 2')
+    .replace(/Final/g, 'Round 2')
+    .replace(/Round 2/g, 'Round 1');
+};
+
 const Results = () => {
   const navigate = useNavigate();
   const [results, setResults] = useState<Result[]>([]);
@@ -157,10 +167,10 @@ const Results = () => {
           border: '1px solid #e9d5ff',
         }}>
           <button style={tabStyle(activeTab === 'round2')} onClick={() => { setActiveTab('round2'); setSelectedCategory(null); }}>
-            <Medal size={18} /> Round 2
+            <Medal size={18} /> Round 1
           </button>
           <button style={tabStyle(activeTab === 'final')} onClick={() => { setActiveTab('final'); setSelectedCategory(null); }}>
-            <Trophy size={18} /> Final Round
+            <Trophy size={18} /> Round 2
           </button>
         </div>
 
@@ -188,7 +198,7 @@ const Results = () => {
           </div>
         ) : categories.length === 0 ? (
           <div className="field-card" style={{ textAlign: 'center', padding: '4rem 0', color: '#6b21a8', fontSize: '1rem', fontStyle: 'italic' }}>
-            {searchTerm ? 'No results match your search term.' : `No ${activeTab === 'final' ? 'Final Round' : 'Round 2'} results have been announced yet.`}
+            {searchTerm ? 'No results match your search term.' : `No ${activeTab === 'final' ? 'Round 2' : 'Round 1'} results have been announced yet.`}
           </div>
         ) : (
           <>
@@ -234,7 +244,7 @@ const Results = () => {
                     color: activeTab === 'final' ? '#b45309' : '#6b21a8',
                   }}>
                     {activeTab === 'final' ? <Trophy size={18} color="#d97706" /> : <Medal size={18} color="#9333ea" />}
-                    {activeTab === 'final' ? 'Final Round Results' : 'Round 2 Qualifiers'} ({groupedByCategory[selectedCategory]?.length || 0})
+                    {activeTab === 'final' ? 'Round 2 Results' : 'Round 1 Qualifiers'} ({groupedByCategory[selectedCategory]?.length || 0})
                   </h3>
 
                   {groupedByCategory[selectedCategory] && (
@@ -253,7 +263,7 @@ const Results = () => {
                                 {activeTab === 'final' ? (
                                   <>
                                     <th style={{ padding: '0.75rem 1rem' }}>Marks Obtained</th>
-                                    <th style={{ padding: '0.75rem 1rem' }}>Final Round Status</th>
+                                    <th style={{ padding: '0.75rem 1rem' }}>Round 2 Status</th>
                                     <th style={{ padding: '0.75rem 1rem' }}>Score Card</th>
                                   </>
                                 ) : (
@@ -272,7 +282,7 @@ const Results = () => {
                                       <>
                                         <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#4c1d95' }}>{parsed.marks || 'N/A'}</td>
                                         <td style={{ padding: '0.75rem 1rem' }}>
-                                          <span className="badge badge-amber" style={{ border: '1px solid #fde68a' }}>{parsed.status}</span>
+                                          <span className="badge badge-amber" style={{ border: '1px solid #fde68a' }}>{getDisplayStatus(parsed.status)}</span>
                                         </td>
                                         <td style={{ padding: '0.75rem 1rem' }}>
                                           {parsed.scorecard_url ? (
@@ -301,7 +311,7 @@ const Results = () => {
                                       </>
                                     ) : (
                                       <td style={{ padding: '0.75rem 1rem' }}>
-                                        <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{parsed.status}</span>
+                                        <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{getDisplayStatus(parsed.status)}</span>
                                       </td>
                                     )}
                                   </tr>
@@ -334,8 +344,8 @@ const Results = () => {
                                     <span className="result-mobile-card-value" style={{ color: '#4c1d95' }}>{parsed.marks || 'N/A'}</span>
                                   </div>
                                   <div className="result-mobile-card-row final-round-row">
-                                    <span className="result-mobile-card-label">Final Status:</span>
-                                    <span className="badge badge-amber" style={{ border: '1px solid #fde68a' }}>{parsed.status}</span>
+                                    <span className="result-mobile-card-label">Round 2 Status:</span>
+                                    <span className="badge badge-amber" style={{ border: '1px solid #fde68a' }}>{getDisplayStatus(parsed.status)}</span>
                                   </div>
                                   <div className="result-mobile-card-row final-round-row">
                                     <span className="result-mobile-card-label">Score Card:</span>
@@ -366,7 +376,7 @@ const Results = () => {
                               ) : (
                                 <div className="result-mobile-card-row">
                                   <span className="result-mobile-card-label">Status:</span>
-                                  <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{parsed.status}</span>
+                                  <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{getDisplayStatus(parsed.status)}</span>
                                 </div>
                               )}
                             </div>

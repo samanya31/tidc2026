@@ -443,7 +443,7 @@ const RegistrationForm = () => {
           <div className="note-text">
             <strong>Important Note:</strong>
             <ul style={{ paddingLeft: '1.2rem', margin: '0.5rem 0 0 0' }}>
-              <li>If you are shortlisted in two categories, you will be allowed to participate in <strong>only one category</strong> in the final round.</li>
+              <li>If you are shortlisted in two categories, you will be allowed to participate in <strong>only one category</strong> in Round 2.</li>
               <li>If you participated last year and <strong>won</strong> in a specific category, you <strong>cannot participate</strong> in that same category again this year.</li>
             </ul>
           </div>

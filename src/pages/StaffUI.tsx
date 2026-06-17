@@ -37,6 +37,20 @@ const getParsedResult = (statusStr: string): ParsedResult => {
   return { status: statusStr || '' };
 };
 
+const getDisplayRound = (roundName: string) => {
+  if (roundName === 'Round 2') return 'Round 1';
+  if (roundName === 'Final Round') return 'Round 2';
+  return roundName;
+};
+
+const getDisplayStatus = (statusStr: string) => {
+  if (!statusStr) return '';
+  return statusStr
+    .replace(/Final Round/g, 'Round 2')
+    .replace(/Final/g, 'Round 2')
+    .replace(/Round 2/g, 'Round 1');
+};
+
 const StaffUI = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -934,8 +948,8 @@ const StaffUI = () => {
                   }}
                   required
                 >
-                  <option value="Round 2">Round 2</option>
-                  <option value="Final Round">Final Round</option>
+                  <option value="Round 2">Round 1</option>
+                  <option value="Final Round">Round 2</option>
                 </select>
               </div>
 
@@ -973,7 +987,7 @@ const StaffUI = () => {
                       ? 'Choose category first' 
                       : selectedRound === 'Round 2'
                       ? `Select student (${selectableStudents.length} found)`
-                      : `Select student (${selectableStudents.length} found from Round 2)`
+                      : `Select student (${selectableStudents.length} found from Round 1)`
                     }
                   </option>
                   {selectableStudents.map(student => (
@@ -1068,7 +1082,7 @@ const StaffUI = () => {
               <div className="table-container" style={{ maxHeight: '450px', overflowY: 'auto', overflowX: 'auto' }}>
                 <div style={{ padding: '1rem 1.5rem', background: '#faf5ff', borderBottom: '2px solid #e9d5ff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.15rem', fontWeight: 700, margin: 0 }}>
-                    Published Round 2 Results ({round2ResultsList.length})
+                    Published Round 1 Results ({round2ResultsList.length})
                   </h3>
                 </div>
                 
@@ -1093,7 +1107,7 @@ const StaffUI = () => {
                     ) : round2ResultsList.length === 0 ? (
                       <tr>
                         <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#6b21a8' }}>
-                          No Round 2 results published yet.
+                          No Round 1 results published yet.
                         </td>
                       </tr>
                     ) : (
@@ -1110,10 +1124,10 @@ const StaffUI = () => {
                               <td style={{ fontWeight: 500, paddingLeft: '1.5rem' }}>{res.student_name}</td>
                               <td>{res.bace || 'N/A'}</td>
                               <td>
-                                <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{res.round}</span>
+                                <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{getDisplayRound(res.round)}</span>
                               </td>
                               <td>
-                                <span className="badge badge-amber">{res.status}</span>
+                                <span className="badge badge-amber">{getDisplayStatus(res.status)}</span>
                               </td>
                               <td style={{ whiteSpace: 'nowrap' }}>
                                 <button
@@ -1145,7 +1159,7 @@ const StaffUI = () => {
               <div className="table-container" style={{ maxHeight: '450px', overflowY: 'auto', overflowX: 'auto' }}>
                 <div style={{ padding: '1rem 1.5rem', background: '#fffbeb', borderBottom: '2px solid #fde68a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#78350f', fontSize: '1.15rem', fontWeight: 700, margin: 0 }}>
-                    Published Final Round Results ({finalResultsList.length})
+                    Published Round 2 Results ({finalResultsList.length})
                   </h3>
                 </div>
                 
@@ -1157,7 +1171,7 @@ const StaffUI = () => {
                       <th>BACE</th>
                       <th>Round</th>
                       <th>Marks</th>
-                      <th>Final Status</th>
+                      <th>Round 2 Status</th>
                       <th>Score Card</th>
                       <th>Action</th>
                     </tr>
@@ -1172,7 +1186,7 @@ const StaffUI = () => {
                     ) : finalResultsList.length === 0 ? (
                       <tr>
                         <td colSpan={8} style={{ textAlign: 'center', padding: '2rem', color: '#78350f' }}>
-                          No Final Round results published yet.
+                          No Round 2 results published yet.
                         </td>
                       </tr>
                     ) : (
@@ -1191,11 +1205,11 @@ const StaffUI = () => {
                                 <td style={{ fontWeight: 500, paddingLeft: '1.5rem' }}>{res.student_name}</td>
                                 <td>{res.bace || 'N/A'}</td>
                                 <td>
-                                  <span className="badge" style={{ background: '#fdf2f8', color: '#db2777', border: '1px solid #fbcfe8', fontWeight: 600 }}>{res.round}</span>
+                                  <span className="badge" style={{ background: '#fdf2f8', color: '#db2777', border: '1px solid #fbcfe8', fontWeight: 600 }}>{getDisplayRound(res.round)}</span>
                                 </td>
                                 <td style={{ fontWeight: 600, color: '#4c1d95' }}>{parsed.marks || 'N/A'}</td>
                                 <td>
-                                  <span className="badge badge-amber">{parsed.status}</span>
+                                  <span className="badge badge-amber">{getDisplayStatus(parsed.status)}</span>
                                 </td>
                                 <td>
                                   {parsed.scorecard_url ? (
@@ -1244,7 +1258,7 @@ const StaffUI = () => {
         {selectedCategory && (
           <div className="field-card" style={{ margin: 0 }}>
             <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.4rem', fontWeight: 700, marginBottom: '1rem', borderBottom: '1px solid #f3e8ff', paddingBottom: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>📋 Candidates for {selectedCategory} ({selectedRound})</span>
+              <span>📋 Candidates for {selectedCategory} ({getDisplayRound(selectedRound)})</span>
               <span style={{ fontSize: '0.9rem', color: '#6b21a8', fontWeight: 500 }}>
                 Total Candidates: {categoryStudents.length}
               </span>
