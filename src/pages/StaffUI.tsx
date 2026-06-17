@@ -223,19 +223,29 @@ const StaffUI = () => {
         : resultStatus;
 
       if (editingResultId !== null) {
-        const { error } = await supabase
+        // First delete the old record since Supabase lacks an UPDATE policy on tidc_results
+        const { error: deleteError } = await supabase
           .from('tidc_results')
-          .update({
-            registration_id: student.id,
-            student_name: student.full_name,
-            bace: student.base_name,
-            category: selectedCategory,
-            round: selectedRound,
-            status: statusValue
-          })
+          .delete()
           .eq('id', editingResultId);
 
-        if (error) throw error;
+        if (deleteError) throw deleteError;
+
+        // Then insert the new record with the updated values
+        const { error: insertError } = await supabase
+          .from('tidc_results')
+          .insert([
+            {
+              registration_id: student.id,
+              student_name: student.full_name,
+              bace: student.base_name,
+              category: selectedCategory,
+              round: selectedRound,
+              status: statusValue
+            }
+          ]);
+
+        if (insertError) throw insertError;
       } else {
         const { error } = await supabase
           .from('tidc_results')
