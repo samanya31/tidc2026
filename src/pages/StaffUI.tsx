@@ -20,6 +20,23 @@ interface Registration {
   categories_won: string[];
 }
 
+interface ParsedResult {
+  status: string;
+  marks?: string;
+  scorecard_url?: string;
+}
+
+const getParsedResult = (statusStr: string): ParsedResult => {
+  try {
+    if (statusStr && statusStr.trim().startsWith('{')) {
+      return JSON.parse(statusStr);
+    }
+  } catch (e) {
+    console.error("Error parsing status JSON:", e);
+  }
+  return { status: statusStr || '' };
+};
+
 const StaffUI = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -44,7 +61,10 @@ const StaffUI = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedRound, setSelectedRound] = useState<'Round 2' | 'Final Round'>('Round 2');
   const [selectedRegId, setSelectedRegId] = useState('');
-  const [resultStatus, setResultStatus] = useState('Qualified');
+  const [resultStatus, setResultStatus] = useState('Qualified for Final Round');
+  const [customStatus, setCustomStatus] = useState('');
+  const [marksObtained, setMarksObtained] = useState('');
+  const [scorecardUrl, setScorecardUrl] = useState('');
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -182,6 +202,14 @@ const StaffUI = () => {
         throw new Error(`${student.full_name} is already qualified/marked for category "${selectedCategory}" in ${selectedRound}.`);
       }
 
+      const statusValue = (selectedRound === 'Final Round' || marksObtained || scorecardUrl)
+        ? JSON.stringify({
+            status: resultStatus === 'Custom...' ? customStatus : resultStatus,
+            marks: marksObtained,
+            scorecard_url: scorecardUrl
+          })
+        : resultStatus;
+
       const { error } = await supabase
         .from('tidc_results')
         .insert([
@@ -191,7 +219,7 @@ const StaffUI = () => {
             bace: student.base_name,
             category: selectedCategory,
             round: selectedRound,
-            status: resultStatus
+            status: statusValue
           }
         ]);
 
@@ -199,6 +227,9 @@ const StaffUI = () => {
 
       setUploadSuccess(true);
       setSelectedRegId('');
+      setMarksObtained('');
+      setScorecardUrl('');
+      setCustomStatus('');
       fetchResults();
     } catch (err: any) {
       setUploadError(err.message || 'Failed to publish result.');
@@ -236,6 +267,14 @@ const StaffUI = () => {
         throw new Error('Result already published for this student, category, and round.');
       }
 
+      const statusValue = selectedRound === 'Final Round'
+        ? JSON.stringify({
+            status: status === 'Qualified' ? 'Qualified for Final Round' : status,
+            marks: '',
+            scorecard_url: ''
+          })
+        : status;
+
       const { error } = await supabase
         .from('tidc_results')
         .insert([{
@@ -244,7 +283,7 @@ const StaffUI = () => {
           bace: baseName,
           category: selectedCategory,
           round: selectedRound,
-          status: status
+          status: statusValue
         }]);
 
       if (error) throw error;
@@ -868,7 +907,9 @@ const StaffUI = () => {
                   className="field-select"
                   value={selectedRound}
                   onChange={(e) => {
-                    setSelectedRound(e.target.value as 'Round 2' | 'Final Round');
+                    const round = e.target.value as 'Round 2' | 'Final Round';
+                    setSelectedRound(round);
+                    setResultStatus(round === 'Final Round' ? 'Qualified for Final Round' : 'Qualified');
                     setSelectedRegId('');
                     setStudentSearchTerm('');
                     setUploadError('');
@@ -933,13 +974,65 @@ const StaffUI = () => {
                 <select
                   className="field-select"
                   value={resultStatus}
-                  onChange={(e) => setResultStatus(e.target.value)}
+                  onChange={(e) => {
+                    setResultStatus(e.target.value);
+                    if (e.target.value !== 'Custom...') {
+                      setCustomStatus('');
+                    }
+                  }}
                   required
                 >
+                  <option value="Qualified for Final Round">Qualified for Final Round</option>
+                  <option value="Waiting List – 90% Chance to Perform in the Final Round">Waiting List – 90% Chance to Perform in the Final Round</option>
+                  <option value="Waiting List – 80% Chance to Perform in the Final Round">Waiting List – 80% Chance to Perform in the Final Round</option>
+                  <option value="Prepare for Next TIDC -2027">Prepare for Next TIDC -2027</option>
                   <option value="Qualified">Qualified</option>
                   <option value="1st Place">1st Place</option>
                   <option value="2nd Place">2nd Place</option>
+                  <option value="Custom...">Custom...</option>
                 </select>
+              </div>
+
+              {resultStatus === 'Custom...' && (
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b21a8', marginBottom: '0.5rem' }}>
+                    Custom Status Text
+                  </label>
+                  <input
+                    type="text"
+                    className="field-input"
+                    placeholder="Enter custom status (e.g. Winner, Runner-up)"
+                    value={customStatus}
+                    onChange={(e) => setCustomStatus(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b21a8', marginBottom: '0.5rem' }}>
+                  Marks Obtained (Optional)
+                </label>
+                <input
+                  type="text"
+                  className="field-input"
+                  placeholder="e.g. 80%"
+                  value={marksObtained}
+                  onChange={(e) => setMarksObtained(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b21a8', marginBottom: '0.5rem' }}>
+                  Score Card URL (Optional)
+                </label>
+                <input
+                  type="url"
+                  className="field-input"
+                  placeholder="e.g. https://drive.google.com/..."
+                  value={scorecardUrl}
+                  onChange={(e) => setScorecardUrl(e.target.value)}
+                />
               </div>
 
               <button
@@ -1002,7 +1095,29 @@ const StaffUI = () => {
                             <span className="badge" style={{ background: res.round === 'Final Round' ? '#fdf2f8' : '#faf5ff', color: res.round === 'Final Round' ? '#db2777' : '#6b21a8', border: res.round === 'Final Round' ? '1px solid #fbcfe8' : '1px solid #e9d5ff', fontWeight: 600 }}>{res.round}</span>
                           </td>
                           <td>
-                            <span className="badge badge-amber">{res.status}</span>
+                            {(() => {
+                              const parsed = getParsedResult(res.status);
+                              return (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                  <span className="badge badge-amber" style={{ width: 'fit-content' }}>{parsed.status}</span>
+                                  {parsed.marks && (
+                                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4c1d95' }}>
+                                      Marks: {parsed.marks}
+                                    </span>
+                                  )}
+                                  {parsed.scorecard_url && (
+                                    <a 
+                                      href={parsed.scorecard_url} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer" 
+                                      style={{ fontSize: '0.75rem', color: '#047857', fontWeight: 600, textDecoration: 'underline' }}
+                                    >
+                                      Score Card
+                                    </a>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </td>
                           <td style={{ whiteSpace: 'nowrap' }}>
                             <button
@@ -1074,9 +1189,31 @@ const StaffUI = () => {
                           <td>{student.base_name || 'N/A'}</td>
                           <td>
                             {existingResult ? (
-                              <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>
-                                {existingResult.status}
-                              </span>
+                              (() => {
+                                const parsed = getParsedResult(existingResult.status);
+                                return (
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                    <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600, width: 'fit-content' }}>
+                                      {parsed.status}
+                                    </span>
+                                    {parsed.marks && (
+                                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4c1d95' }}>
+                                        Marks: {parsed.marks}
+                                      </span>
+                                    )}
+                                    {parsed.scorecard_url && (
+                                      <a 
+                                        href={parsed.scorecard_url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        style={{ fontSize: '0.75rem', color: '#047857', fontWeight: 600, textDecoration: 'underline' }}
+                                      >
+                                        Score Card
+                                      </a>
+                                    )}
+                                  </div>
+                                );
+                              })()
                             ) : (
                               <span className="badge badge-amber" style={{ background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a' }}>
                                 Pending Selection

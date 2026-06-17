@@ -13,6 +13,23 @@ interface Result {
   status: string;
 }
 
+interface ParsedResult {
+  status: string;
+  marks?: string;
+  scorecard_url?: string;
+}
+
+const getParsedResult = (statusStr: string): ParsedResult => {
+  try {
+    if (statusStr && statusStr.trim().startsWith('{')) {
+      return JSON.parse(statusStr);
+    }
+  } catch (e) {
+    console.error("Error parsing status JSON:", e);
+  }
+  return { status: statusStr || '' };
+};
+
 const Results = () => {
   const navigate = useNavigate();
   const [results, setResults] = useState<Result[]>([]);
@@ -192,23 +209,63 @@ const Results = () => {
                       <tr>
                         <th style={{ padding: '0.75rem 1rem' }}>Student</th>
                         <th style={{ padding: '0.75rem 1rem' }}>BACE</th>
-                        <th style={{ padding: '0.75rem 1rem' }}>Status</th>
+                        {activeTab === 'final' ? (
+                          <>
+                            <th style={{ padding: '0.75rem 1rem' }}>Marks Obtained</th>
+                            <th style={{ padding: '0.75rem 1rem' }}>Final Round Status</th>
+                            <th style={{ padding: '0.75rem 1rem' }}>Score Card</th>
+                          </>
+                        ) : (
+                          <th style={{ padding: '0.75rem 1rem' }}>Status</th>
+                        )}
                       </tr>
                     </thead>
                     <tbody>
-                      {groupedByCategory[category].map(res => (
-                        <tr key={res.id} style={{ background: activeTab === 'final' ? '#fffbeb' : undefined }}>
-                          <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: activeTab === 'final' ? '#78350f' : '#1e1b4b' }}>{res.student_name}</td>
-                          <td style={{ padding: '0.75rem 1rem' }}>{res.bace || 'N/A'}</td>
-                          <td style={{ padding: '0.75rem 1rem' }}>
+                      {groupedByCategory[category].map(res => {
+                        const parsed = getParsedResult(res.status);
+                        return (
+                          <tr key={res.id} style={{ background: activeTab === 'final' ? '#fffbeb' : undefined }}>
+                            <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: activeTab === 'final' ? '#78350f' : '#1e1b4b' }}>{res.student_name}</td>
+                            <td style={{ padding: '0.75rem 1rem' }}>{res.bace || 'N/A'}</td>
                             {activeTab === 'final' ? (
-                              <span className="badge badge-amber" style={{ border: '1px solid #fde68a' }}>{res.status}</span>
+                              <>
+                                <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#4c1d95' }}>{parsed.marks || 'N/A'}</td>
+                                <td style={{ padding: '0.75rem 1rem' }}>
+                                  <span className="badge badge-amber" style={{ border: '1px solid #fde68a' }}>{parsed.status}</span>
+                                </td>
+                                <td style={{ padding: '0.75rem 1rem' }}>
+                                  {parsed.scorecard_url ? (
+                                    <a 
+                                      href={parsed.scorecard_url} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer" 
+                                      className="badge" 
+                                      style={{ 
+                                        background: '#ecfdf5', 
+                                        color: '#047857', 
+                                        border: '1px solid #a7f3d0', 
+                                        fontWeight: 600,
+                                        textDecoration: 'none',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '0.25rem'
+                                      }}
+                                    >
+                                      View Score Card
+                                    </a>
+                                  ) : (
+                                    <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>N/A</span>
+                                  )}
+                                </td>
+                              </>
                             ) : (
-                              <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{res.status}</span>
+                              <td style={{ padding: '0.75rem 1rem' }}>
+                                <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{parsed.status}</span>
+                              </td>
                             )}
-                          </td>
-                        </tr>
-                      ))}
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
