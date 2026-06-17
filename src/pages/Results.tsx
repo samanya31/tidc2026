@@ -205,74 +205,139 @@ const Results = () => {
                   {activeTab === 'final' ? 'Final Round Results' : 'Round 2 Qualifiers'} ({groupedByCategory[category].length})
                 </h3>
 
-                <div className="table-container" style={{
-                  overflowX: 'auto', width: '100%',
-                  border: activeTab === 'final' ? '1px solid #fef3c7' : undefined,
-                }}>
-                  <table className="data-table" style={{ width: '100%', tableLayout: 'auto' }}>
-                    <thead>
-                      <tr>
-                        <th style={{ padding: '0.75rem 1rem' }}>Student</th>
-                        <th style={{ padding: '0.75rem 1rem' }}>BACE</th>
-                        {activeTab === 'final' ? (
+                {/* Desktop view: Table */}
+                <div className="desktop-only-table">
+                  <div className="table-container" style={{
+                    overflowX: 'auto', width: '100%',
+                    border: activeTab === 'final' ? '1px solid #fef3c7' : undefined,
+                  }}>
+                    <table className="data-table" style={{ width: '100%', tableLayout: 'auto' }}>
+                      <thead>
+                        <tr>
+                          <th style={{ padding: '0.75rem 1rem' }}>Student</th>
+                          <th style={{ padding: '0.75rem 1rem' }}>BACE</th>
+                          {activeTab === 'final' ? (
+                            <>
+                              <th style={{ padding: '0.75rem 1rem' }}>Marks Obtained</th>
+                              <th style={{ padding: '0.75rem 1rem' }}>Final Round Status</th>
+                              <th style={{ padding: '0.75rem 1rem' }}>Score Card</th>
+                            </>
+                          ) : (
+                            <th style={{ padding: '0.75rem 1rem' }}>Status</th>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {groupedByCategory[category].map(res => {
+                          const parsed = getParsedResult(res.status);
+                          return (
+                            <tr key={res.id} style={{ background: activeTab === 'final' ? '#fffbeb' : undefined }}>
+                              <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: activeTab === 'final' ? '#78350f' : '#1e1b4b' }}>{res.student_name}</td>
+                              <td style={{ padding: '0.75rem 1rem' }}>{res.bace || 'N/A'}</td>
+                              {activeTab === 'final' ? (
+                                <>
+                                  <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#4c1d95' }}>{parsed.marks || 'N/A'}</td>
+                                  <td style={{ padding: '0.75rem 1rem' }}>
+                                    <span className="badge badge-amber" style={{ border: '1px solid #fde68a' }}>{parsed.status}</span>
+                                  </td>
+                                  <td style={{ padding: '0.75rem 1rem' }}>
+                                    {parsed.scorecard_url ? (
+                                      <a 
+                                        href={parsed.scorecard_url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="badge" 
+                                        style={{ 
+                                          background: '#ecfdf5', 
+                                          color: '#047857', 
+                                          border: '1px solid #a7f3d0', 
+                                          fontWeight: 600,
+                                          textDecoration: 'none',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: '0.25rem'
+                                        }}
+                                      >
+                                        View Score Card
+                                      </a>
+                                    ) : (
+                                      <span style={{ color: '#9ca3af', fontSize: '0.85rem', fontStyle: 'italic' }}>Coming Soon</span>
+                                    )}
+                                  </td>
+                                </>
+                              ) : (
+                                <td style={{ padding: '0.75rem 1rem' }}>
+                                  <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{parsed.status}</span>
+                                </td>
+                              )}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Mobile view: Cards */}
+                <div className="mobile-only-cards">
+                  {groupedByCategory[category].map(res => {
+                    const parsed = getParsedResult(res.status);
+                    const isFinal = activeTab === 'final';
+                    return (
+                      <div 
+                        key={res.id} 
+                        className={`result-mobile-card ${isFinal ? 'final-round-card' : ''}`}
+                      >
+                        <div className="result-mobile-card-header">
+                          <span className="result-mobile-card-name">{res.student_name}</span>
+                          <span className="result-mobile-card-bace">{res.bace || 'N/A'}</span>
+                        </div>
+                        
+                        {isFinal ? (
                           <>
-                            <th style={{ padding: '0.75rem 1rem' }}>Marks Obtained</th>
-                            <th style={{ padding: '0.75rem 1rem' }}>Final Round Status</th>
-                            <th style={{ padding: '0.75rem 1rem' }}>Score Card</th>
+                            <div className="result-mobile-card-row final-round-row">
+                              <span className="result-mobile-card-label">Marks Obtained:</span>
+                              <span className="result-mobile-card-value" style={{ color: '#4c1d95' }}>{parsed.marks || 'N/A'}</span>
+                            </div>
+                            <div className="result-mobile-card-row final-round-row">
+                              <span className="result-mobile-card-label">Final Status:</span>
+                              <span className="badge badge-amber" style={{ border: '1px solid #fde68a' }}>{parsed.status}</span>
+                            </div>
+                            <div className="result-mobile-card-row final-round-row">
+                              <span className="result-mobile-card-label">Score Card:</span>
+                              {parsed.scorecard_url ? (
+                                <a 
+                                  href={parsed.scorecard_url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="badge" 
+                                  style={{ 
+                                    background: '#ecfdf5', 
+                                    color: '#047857', 
+                                    border: '1px solid #a7f3d0', 
+                                    fontWeight: 600,
+                                    textDecoration: 'none',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.25rem'
+                                  }}
+                                >
+                                  View Score Card
+                                </a>
+                              ) : (
+                                <span style={{ color: '#9ca3af', fontSize: '0.85rem', fontStyle: 'italic' }}>Coming Soon</span>
+                              )}
+                            </div>
                           </>
                         ) : (
-                          <th style={{ padding: '0.75rem 1rem' }}>Status</th>
+                          <div className="result-mobile-card-row">
+                            <span className="result-mobile-card-label">Status:</span>
+                            <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{parsed.status}</span>
+                          </div>
                         )}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {groupedByCategory[category].map(res => {
-                        const parsed = getParsedResult(res.status);
-                        return (
-                          <tr key={res.id} style={{ background: activeTab === 'final' ? '#fffbeb' : undefined }}>
-                            <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: activeTab === 'final' ? '#78350f' : '#1e1b4b' }}>{res.student_name}</td>
-                            <td style={{ padding: '0.75rem 1rem' }}>{res.bace || 'N/A'}</td>
-                            {activeTab === 'final' ? (
-                              <>
-                                <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#4c1d95' }}>{parsed.marks || 'N/A'}</td>
-                                <td style={{ padding: '0.75rem 1rem' }}>
-                                  <span className="badge badge-amber" style={{ border: '1px solid #fde68a' }}>{parsed.status}</span>
-                                </td>
-                                <td style={{ padding: '0.75rem 1rem' }}>
-                                  {parsed.scorecard_url ? (
-                                    <a 
-                                      href={parsed.scorecard_url} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer" 
-                                      className="badge" 
-                                      style={{ 
-                                        background: '#ecfdf5', 
-                                        color: '#047857', 
-                                        border: '1px solid #a7f3d0', 
-                                        fontWeight: 600,
-                                        textDecoration: 'none',
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: '0.25rem'
-                                      }}
-                                    >
-                                      View Score Card
-                                    </a>
-                                  ) : (
-                                    <span style={{ color: '#9ca3af', fontSize: '0.85rem', fontStyle: 'italic' }}>Coming Soon</span>
-                                  )}
-                                </td>
-                              </>
-                            ) : (
-                              <td style={{ padding: '0.75rem 1rem' }}>
-                                <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{parsed.status}</span>
-                              </td>
-                            )}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))}
