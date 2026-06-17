@@ -323,7 +323,7 @@ const StaffUI = () => {
           mobile_number: newStudentMobile || 'Manual',
           whatsapp_number: newStudentWhatsapp || '',
           email: newStudentEmail || 'manual@example.com',
-          dob: '',
+          dob: null,
           city_state: 'Manual',
           participated_before: 'none',
           winner_last_year: 'no',
@@ -447,18 +447,43 @@ const StaffUI = () => {
 
   const selectableStudents = getSelectableStudents();
 
-  // Group results by category
-  const resultsByCategory = results.reduce((acc, current) => {
+  // Group published results into Round 2 vs Final Round
+  const round2ResultsList = results.filter(res => {
+    const isJson = res.status && res.status.trim().startsWith('{');
+    return res.round === 'Round 2' && !isJson;
+  });
+
+  const finalResultsList = results.filter(res => {
+    const isJson = res.status && res.status.trim().startsWith('{');
+    return res.round === 'Final Round' || isJson;
+  });
+
+  // Group Round 2 results by category
+  const round2ByCategory = round2ResultsList.reduce((acc, current) => {
     const cat = current.category || 'Other';
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(current);
     return acc;
   }, {} as Record<string, any[]>);
 
-  const resultCategories = Object.keys(resultsByCategory).sort();
+  const round2Categories = Object.keys(round2ByCategory).sort();
 
-  resultCategories.forEach(cat => {
-    resultsByCategory[cat].sort((a: any, b: any) => (a.student_name || '').localeCompare(b.student_name || ''));
+  round2Categories.forEach(cat => {
+    round2ByCategory[cat].sort((a: any, b: any) => (a.student_name || '').localeCompare(b.student_name || ''));
+  });
+
+  // Group Final Round results by category
+  const finalByCategory = finalResultsList.reduce((acc, current) => {
+    const cat = current.category || 'Other';
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(current);
+    return acc;
+  }, {} as Record<string, any[]>);
+
+  const finalCategories = Object.keys(finalByCategory).sort();
+
+  finalCategories.forEach(cat => {
+    finalByCategory[cat].sort((a: any, b: any) => (a.student_name || '').localeCompare(b.student_name || ''));
   });
 
   const sortedAndFilteredRegistrations = registrations
@@ -1026,7 +1051,6 @@ const StaffUI = () => {
                   onChange={(e) => setScorecardUrl(e.target.value)}
                 />
               </div>
-
               <button
                 type="submit"
                 className="btn-primary"
@@ -1038,66 +1062,143 @@ const StaffUI = () => {
             </form>
           </div>
 
-          {/* Results List */}
-          <div className="table-container" style={{ maxHeight: '600px', overflow: 'auto', minWidth: '860px' }}>
-            <div style={{ padding: '1.25rem 1.5rem', background: '#faf5ff', borderBottom: '2px solid #e9d5ff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
-                Published Results ({results.length})
-              </h3>
-            </div>
-            
-            <table className="data-table" style={{ minWidth: '860px' }}>
-              <thead>
-                <tr>
-                  <th style={{ width: '56px' }}>No.</th>
-                  <th>Student</th>
-                  <th>BACE</th>
-                  <th>Round</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {resultsLoading && results.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
-                      Loading results...
-                    </td>
-                  </tr>
-                ) : results.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>
-                      No results published yet.
-                    </td>
-                  </tr>
-                ) : (
-                  resultCategories.map((cat) => (
-                    <React.Fragment key={cat}>
-                      <tr style={{ background: '#f5f3ff' }}>
-                        <td colSpan={6} style={{ fontWeight: 700, color: '#4c1d95', padding: '0.65rem 1rem', fontSize: '0.85rem' }}>
-                          📁 {cat} ({resultsByCategory[cat].length})
+            {/* Stack of Tables */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', minWidth: '860px' }}>
+              {/* Round 2 Results Table */}
+              <div className="table-container" style={{ maxHeight: '450px', overflowY: 'auto', overflowX: 'auto' }}>
+                <div style={{ padding: '1rem 1.5rem', background: '#faf5ff', borderBottom: '2px solid #e9d5ff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.15rem', fontWeight: 700, margin: 0 }}>
+                    Published Round 2 Results ({round2ResultsList.length})
+                  </h3>
+                </div>
+                
+                <table className="data-table" style={{ width: '100%' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ width: '56px' }}>No.</th>
+                      <th>Student</th>
+                      <th>BACE</th>
+                      <th>Round</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {resultsLoading && round2ResultsList.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#6b21a8' }}>
+                          Loading results...
                         </td>
                       </tr>
-                      {resultsByCategory[cat].map((res: any, idx: number) => (
-                        <tr key={res.id}>
-                          <td style={{ textAlign: 'right', paddingRight: '1rem', fontWeight: 600 }}>#{idx + 1}</td>
-                          <td style={{ fontWeight: 500, paddingLeft: '1.5rem' }}>{res.student_name}</td>
-                          <td>{res.bace || 'N/A'}</td>
-                          <td>
-                            <span className="badge" style={{ background: res.round === 'Final Round' ? '#fdf2f8' : '#faf5ff', color: res.round === 'Final Round' ? '#db2777' : '#6b21a8', border: res.round === 'Final Round' ? '1px solid #fbcfe8' : '1px solid #e9d5ff', fontWeight: 600 }}>{res.round}</span>
-                          </td>
-                          <td>
-                            {(() => {
-                              const parsed = getParsedResult(res.status);
-                              return (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                  <span className="badge badge-amber" style={{ width: 'fit-content' }}>{parsed.status}</span>
-                                  {parsed.marks && (
-                                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#4c1d95' }}>
-                                      Marks: {parsed.marks}
-                                    </span>
-                                  )}
-                                  {parsed.scorecard_url && (
+                    ) : round2ResultsList.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#6b21a8' }}>
+                          No Round 2 results published yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      round2Categories.map((cat) => (
+                        <React.Fragment key={cat}>
+                          <tr style={{ background: '#f5f3ff' }}>
+                            <td colSpan={6} style={{ fontWeight: 700, color: '#4c1d95', padding: '0.5rem 1rem', fontSize: '0.8rem' }}>
+                              📁 {cat} ({round2ByCategory[cat].length})
+                            </td>
+                          </tr>
+                          {round2ByCategory[cat].map((res: any, idx: number) => (
+                            <tr key={res.id}>
+                              <td style={{ textAlign: 'right', paddingRight: '1rem', fontWeight: 600 }}>#{idx + 1}</td>
+                              <td style={{ fontWeight: 500, paddingLeft: '1.5rem' }}>{res.student_name}</td>
+                              <td>{res.bace || 'N/A'}</td>
+                              <td>
+                                <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{res.round}</span>
+                              </td>
+                              <td>
+                                <span className="badge badge-amber">{res.status}</span>
+                              </td>
+                              <td style={{ whiteSpace: 'nowrap' }}>
+                                <button
+                                  onClick={() => handleDeleteResult(res.id)}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: '#e11d48',
+                                    cursor: 'pointer',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 600,
+                                    textDecoration: 'underline',
+                                    padding: 0
+                                  }}
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </React.Fragment>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Final Round Results Table */}
+              <div className="table-container" style={{ maxHeight: '450px', overflowY: 'auto', overflowX: 'auto' }}>
+                <div style={{ padding: '1rem 1.5rem', background: '#fffbeb', borderBottom: '2px solid #fde68a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#78350f', fontSize: '1.15rem', fontWeight: 700, margin: 0 }}>
+                    Published Final Round Results ({finalResultsList.length})
+                  </h3>
+                </div>
+                
+                <table className="data-table" style={{ width: '100%' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ width: '56px' }}>No.</th>
+                      <th>Student</th>
+                      <th>BACE</th>
+                      <th>Round</th>
+                      <th>Marks</th>
+                      <th>Final Status</th>
+                      <th>Score Card</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {resultsLoading && finalResultsList.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} style={{ textAlign: 'center', padding: '2rem', color: '#78350f' }}>
+                          Loading results...
+                        </td>
+                      </tr>
+                    ) : finalResultsList.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} style={{ textAlign: 'center', padding: '2rem', color: '#78350f' }}>
+                          No Final Round results published yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      finalCategories.map((cat) => (
+                        <React.Fragment key={cat}>
+                          <tr style={{ background: '#fffbeb' }}>
+                            <td colSpan={8} style={{ fontWeight: 700, color: '#78350f', padding: '0.5rem 1rem', fontSize: '0.8rem' }}>
+                              📁 {cat} ({finalByCategory[cat].length})
+                            </td>
+                          </tr>
+                          {finalByCategory[cat].map((res: any, idx: number) => {
+                            const parsed = getParsedResult(res.status);
+                            return (
+                              <tr key={res.id}>
+                                <td style={{ textAlign: 'right', paddingRight: '1rem', fontWeight: 600 }}>#{idx + 1}</td>
+                                <td style={{ fontWeight: 500, paddingLeft: '1.5rem' }}>{res.student_name}</td>
+                                <td>{res.bace || 'N/A'}</td>
+                                <td>
+                                  <span className="badge" style={{ background: '#fdf2f8', color: '#db2777', border: '1px solid #fbcfe8', fontWeight: 600 }}>{res.round}</span>
+                                </td>
+                                <td style={{ fontWeight: 600, color: '#4c1d95' }}>{parsed.marks || 'N/A'}</td>
+                                <td>
+                                  <span className="badge badge-amber">{parsed.status}</span>
+                                </td>
+                                <td>
+                                  {parsed.scorecard_url ? (
                                     <a 
                                       href={parsed.scorecard_url} 
                                       target="_blank" 
@@ -1106,37 +1207,38 @@ const StaffUI = () => {
                                     >
                                       Score Card
                                     </a>
+                                  ) : (
+                                    <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>N/A</span>
                                   )}
-                                </div>
-                              );
-                            })()}
-                          </td>
-                          <td style={{ whiteSpace: 'nowrap' }}>
-                            <button
-                              onClick={() => handleDeleteResult(res.id)}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                color: '#e11d48',
-                                cursor: 'pointer',
-                                fontSize: '0.85rem',
-                                fontWeight: 600,
-                                textDecoration: 'underline',
-                                padding: 0
-                              }}
-                            >
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </React.Fragment>
-                  ))
-                )}
-              </tbody>
-            </table>
+                                </td>
+                                <td style={{ whiteSpace: 'nowrap' }}>
+                                  <button
+                                    onClick={() => handleDeleteResult(res.id)}
+                                    style={{
+                                      background: 'none',
+                                      border: 'none',
+                                      color: '#e11d48',
+                                      cursor: 'pointer',
+                                      fontSize: '0.85rem',
+                                      fontWeight: 600,
+                                      textDecoration: 'underline',
+                                      padding: 0
+                                    }}
+                                  >
+                                    Delete
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </React.Fragment>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-        </div>
 
         {/* Student Candidate Selection Table */}
         {selectedCategory && (
