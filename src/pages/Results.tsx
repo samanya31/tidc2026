@@ -32,13 +32,7 @@ const getParsedResult = (statusStr: string): ParsedResult => {
 
 
 
-const getDisplayStatus = (statusStr: string) => {
-  if (!statusStr) return '';
-  return statusStr
-    .replace(/Final Round/g, 'Round 2')
-    .replace(/Final/g, 'Round 2')
-    .replace(/Round 2/g, 'Round 1');
-};
+
 
 const Results = () => {
   const navigate = useNavigate();
@@ -282,7 +276,7 @@ const Results = () => {
                                       <>
                                         <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#4c1d95' }}>{parsed.marks || 'N/A'}</td>
                                         <td style={{ padding: '0.75rem 1rem' }}>
-                                          <span className="badge badge-amber" style={{ border: '1px solid #fde68a' }}>{getDisplayStatus(parsed.status)}</span>
+                                          <span className="badge badge-amber" style={{ border: '1px solid #fde68a' }}>{parsed.status}</span>
                                         </td>
                                         <td style={{ padding: '0.75rem 1rem' }}>
                                           {parsed.scorecard_url ? (
@@ -311,7 +305,7 @@ const Results = () => {
                                       </>
                                     ) : (
                                       <td style={{ padding: '0.75rem 1rem' }}>
-                                        <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{getDisplayStatus(parsed.status)}</span>
+                                        <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{parsed.status}</span>
                                       </td>
                                     )}
                                   </tr>
@@ -345,7 +339,7 @@ const Results = () => {
                                   </div>
                                   <div className="result-mobile-card-row final-round-row">
                                     <span className="result-mobile-card-label">Round 2 Status:</span>
-                                    <span className="badge badge-amber" style={{ border: '1px solid #fde68a' }}>{getDisplayStatus(parsed.status)}</span>
+                                    <span className="badge badge-amber" style={{ border: '1px solid #fde68a' }}>{parsed.status}</span>
                                   </div>
                                   <div className="result-mobile-card-row final-round-row">
                                     <span className="result-mobile-card-label">Score Card:</span>
@@ -376,7 +370,7 @@ const Results = () => {
                               ) : (
                                 <div className="result-mobile-card-row">
                                   <span className="result-mobile-card-label">Status:</span>
-                                  <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{getDisplayStatus(parsed.status)}</span>
+                                  <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{parsed.status}</span>
                                 </div>
                               )}
                             </div>

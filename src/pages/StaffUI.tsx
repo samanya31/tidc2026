@@ -43,13 +43,7 @@ const getDisplayRound = (roundName: string) => {
   return roundName;
 };
 
-const getDisplayStatus = (statusStr: string) => {
-  if (!statusStr) return '';
-  return statusStr
-    .replace(/Final Round/g, 'Round 2')
-    .replace(/Final/g, 'Round 2')
-    .replace(/Round 2/g, 'Round 1');
-};
+
 
 const StaffUI = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -1127,7 +1121,7 @@ const StaffUI = () => {
                                 <span className="badge" style={{ background: '#faf5ff', color: '#6b21a8', border: '1px solid #e9d5ff', fontWeight: 600 }}>{getDisplayRound(res.round)}</span>
                               </td>
                               <td>
-                                <span className="badge badge-amber">{getDisplayStatus(res.status)}</span>
+                                <span className="badge badge-amber">{res.status}</span>
                               </td>
                               <td style={{ whiteSpace: 'nowrap' }}>
                                 <button
@@ -1209,7 +1203,7 @@ const StaffUI = () => {
                                 </td>
                                 <td style={{ fontWeight: 600, color: '#4c1d95' }}>{parsed.marks || 'N/A'}</td>
                                 <td>
-                                  <span className="badge badge-amber">{getDisplayStatus(parsed.status)}</span>
+                                  <span className="badge badge-amber">{parsed.status}</span>
                                 </td>
                                 <td>
                                   {parsed.scorecard_url ? (
