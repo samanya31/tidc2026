@@ -88,6 +88,21 @@ const Results = () => {
     return acc;
   }, {} as Record<string, Result[]>);
 
+  // Sort each category's results by marks (percentage) descending, then alphabetically
+  Object.values(groupedByCategory).forEach(resultsArray => {
+    resultsArray.sort((a, b) => {
+      const parsedA = getParsedResult(a.status);
+      const parsedB = getParsedResult(b.status);
+      const marksA = parseFloat((parsedA.marks || '').replace('%', '')) || 0;
+      const marksB = parseFloat((parsedB.marks || '').replace('%', '')) || 0;
+      
+      if (marksA !== marksB) {
+        return marksB - marksA; // Highest percentage first
+      }
+      return a.student_name.localeCompare(b.student_name);
+    });
+  });
+
   const categories = Object.keys(groupedByCategory);
 
   const tabStyle = (isActive: boolean): React.CSSProperties => ({
