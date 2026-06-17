@@ -67,9 +67,14 @@ const Results = () => {
   );
 
   // Filter by active tab
-  const tabResults = filteredResults.filter(res =>
-    activeTab === 'final' ? res.round === 'Final Round' : res.round !== 'Final Round'
-  );
+  const tabResults = filteredResults.filter(res => {
+    const isJsonStatus = res.status && res.status.trim().startsWith('{');
+    if (activeTab === 'final') {
+      return res.round === 'Final Round' || isJsonStatus;
+    } else {
+      return res.round === 'Round 2' && !isJsonStatus;
+    }
+  });
 
   // Group by category
   const groupedByCategory = tabResults.reduce((acc, current) => {

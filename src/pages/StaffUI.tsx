@@ -405,13 +405,17 @@ const StaffUI = () => {
         reg.category?.toLowerCase().includes(selectedCategory.toLowerCase())
       );
     } else {
-      // Return students who have been qualified for Round 2 in this category
-      const round2StudentIds = results
-        .filter(res => res.category === selectedCategory && res.round === 'Round 2')
-        .map(res => res.registration_id);
+      // Return students who have been qualified for Round 2 in this category (match by ID or Name)
+      const round2Results = results.filter(
+        res => res.category === selectedCategory && res.round === 'Round 2'
+      );
+      const round2StudentIds = round2Results.map(res => res.registration_id).filter(Boolean);
+      const round2StudentNames = round2Results.map(res => res.student_name?.toLowerCase()).filter(Boolean);
       
-      // Get the registration details for these students
-      list = registrations.filter(reg => round2StudentIds.includes(reg.id));
+      list = registrations.filter(reg => 
+        round2StudentIds.includes(reg.id) || 
+        round2StudentNames.includes(reg.full_name?.toLowerCase())
+      );
     }
 
     // Sort alphabetically by full_name
@@ -424,19 +428,7 @@ const StaffUI = () => {
   const getSelectableStudents = () => {
     if (!selectedCategory) return [];
     
-    let list = [];
-    if (selectedRound === 'Round 2') {
-      // Return all registered students
-      list = [...registrations];
-    } else {
-      // Return all students who have been qualified for Round 2 in any category
-      const round2StudentIds = results
-        .filter(res => res.round === 'Round 2')
-        .map(res => res.registration_id);
-      
-      // Get the registration details for these students
-      list = registrations.filter(reg => round2StudentIds.includes(reg.id));
-    }
+    let list = [...registrations];
 
     if (studentSearchTerm) {
       const search = studentSearchTerm.toLowerCase();
