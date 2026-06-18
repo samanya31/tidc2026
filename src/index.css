@@ -167,12 +167,12 @@ body { background: linear-gradient(160deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%
 @media (max-width: 768px) {
   .results-bg {
     position: absolute;
-    height: 500px;
+    height: 350px;
     overflow: hidden;
   }
 
   .results-bg img {
-    height: 500px;
+    height: 350px;
     object-fit: cover;
     object-position: center top;
   }
@@ -182,7 +182,7 @@ body { background: linear-gradient(160deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%
   }
 
   .results-content {
-    margin-top: 350px !important;
+    margin-top: 120px !important;
   }
 }
 
