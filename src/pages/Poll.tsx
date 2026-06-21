@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { useNavigate } from 'react-router-dom';
 import bannerImg from '../assets/DN_TIDC.png';
-import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 interface PollCandidate {
   id: number;
@@ -12,24 +11,23 @@ interface PollCandidate {
 }
 
 const Poll = () => {
-  const navigate = useNavigate();
   const [candidates, setCandidates] = useState<PollCandidate[]>([]);
   const [activePolls, setActivePolls] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [votingFor, setVotingFor] = useState<number | null>(null);
   
-  // Track voted categories from localStorage
-  const [votedCategories, setVotedCategories] = useState<Record<string, boolean>>({});
+  // Track voted candidates from localStorage
+  const [votedCategories, setVotedCategories] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetchCandidates();
     // Load local votes
-    const voted: Record<string, boolean> = {};
+    const voted: Record<string, string> = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key?.startsWith('tidc_voted_')) {
         const cat = key.replace('tidc_voted_', '');
-        voted[cat] = true;
+        voted[cat] = localStorage.getItem(key) || 'true';
       }
     }
     setVotedCategories(voted);
@@ -85,8 +83,8 @@ const Poll = () => {
       if (error) throw error;
 
       // Mark as voted in localStorage
-      localStorage.setItem(`tidc_voted_${candidate.category}`, 'true');
-      setVotedCategories(prev => ({ ...prev, [candidate.category]: true }));
+      localStorage.setItem(`tidc_voted_${candidate.category}`, candidate.student_name);
+      setVotedCategories(prev => ({ ...prev, [candidate.category]: candidate.student_name }));
       
     } catch (err) {
       console.error('Error casting vote:', err);
@@ -114,27 +112,7 @@ const Poll = () => {
         <div className="results-bg-overlay" />
       </div>
 
-      <div className="form-body results-content" style={{ marginTop: '2rem', maxWidth: '800px', position: 'relative', zIndex: 1 }}>
-        <button 
-          onClick={() => navigate('/')} 
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#9333ea',
-            cursor: 'pointer',
-            fontFamily: 'Poppins, sans-serif',
-            fontSize: '0.9rem',
-            fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            marginBottom: '1.5rem',
-            padding: 0
-          }}
-        >
-          <ArrowLeft size={18} /> Back to Home
-        </button>
-
+      <div className="form-body results-content" style={{ marginTop: '0', paddingTop: '2rem', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', maxWidth: '800px', position: 'relative', zIndex: 1 }}>
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <div style={{ fontSize: '3rem', marginBottom: '0.5rem', animation: 'bounce 2s infinite' }}>🗳️</div>
           <h1 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '2.4rem', fontWeight: 700, marginBottom: '0.5rem' }}>
@@ -164,50 +142,59 @@ const Poll = () => {
                       {category}
                     </h2>
                     {hasVoted && (
-                      <span className="badge" style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span className="badge" style={{ background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <CheckCircle2 size={14} /> Voted
                       </span>
                     )}
                   </div>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {groupedByCategory[category].map(candidate => (
-                      <div 
-                        key={candidate.id} 
-                        style={{ 
-                          display: 'flex', 
-                          justifyContent: 'space-between', 
-                          alignItems: 'center', 
-                          background: '#faf5ff', 
-                          padding: '1rem', 
-                          borderRadius: '12px',
-                          border: '1px solid #e9d5ff'
-                        }}
-                      >
-                        <div>
-                          <div style={{ fontWeight: 600, color: '#4c1d95', fontSize: '1.05rem', marginBottom: '0.2rem' }}>
-                            {candidate.student_name}
-                          </div>
-                          <div style={{ fontSize: '0.85rem', color: '#6b21a8' }}>
-                            {candidate.bace || 'N/A'}
-                          </div>
-                        </div>
-                        
-                        <button
-                          className="btn-primary"
-                          disabled={hasVoted || votingFor !== null}
-                          onClick={() => handleVote(candidate)}
-                          style={{
-                            padding: '0.6rem 1.2rem',
-                            opacity: hasVoted ? 0.5 : 1,
-                            background: hasVoted ? '#d8b4fe' : '#9333ea',
-                            cursor: hasVoted ? 'not-allowed' : 'pointer'
+                    {groupedByCategory[category].map(candidate => {
+                      const isVotedForThisCandidate = votedCategories[category] === candidate.student_name;
+                      return (
+                        <div 
+                          key={candidate.id} 
+                          style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center', 
+                            background: isVotedForThisCandidate ? '#fffbeb' : '#faf5ff', 
+                            padding: '1rem', 
+                            borderRadius: '12px',
+                            border: isVotedForThisCandidate ? '2px solid #f59e0b' : '1px solid #e9d5ff',
+                            transition: 'all 0.3s'
                           }}
                         >
-                          {votingFor === candidate.id ? 'Voting...' : (hasVoted ? 'Voted' : 'Vote')}
-                        </button>
-                      </div>
-                    ))}
+                          <div>
+                            <div style={{ fontWeight: 600, color: isVotedForThisCandidate ? '#78350f' : '#4c1d95', fontSize: '1.05rem', marginBottom: '0.2rem' }}>
+                              {candidate.student_name}
+                            </div>
+                            <div style={{ fontSize: '0.85rem', color: isVotedForThisCandidate ? '#92400e' : '#6b21a8' }}>
+                              {candidate.bace || 'N/A'}
+                            </div>
+                          </div>
+                          
+                          <button
+                            className="btn-primary"
+                            disabled={!!hasVoted || votingFor !== null}
+                            onClick={() => handleVote(candidate)}
+                            style={{
+                              padding: '0.6rem 1.2rem',
+                              opacity: hasVoted && !isVotedForThisCandidate ? 0.5 : 1,
+                              background: hasVoted 
+                                ? (isVotedForThisCandidate ? 'linear-gradient(to right, #f59e0b, #d97706)' : '#d1d5db') 
+                                : 'linear-gradient(to right, #f59e0b, #d97706)',
+                              color: 'white',
+                              border: hasVoted && !isVotedForThisCandidate ? 'none' : '1px solid #b45309',
+                              boxShadow: hasVoted && !isVotedForThisCandidate ? 'none' : '0 4px 6px -1px rgba(217, 119, 6, 0.4)',
+                              cursor: hasVoted ? 'not-allowed' : 'pointer'
+                            }}
+                          >
+                            {votingFor === candidate.id ? 'Voting...' : (isVotedForThisCandidate ? 'Voted' : 'Vote')}
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               );

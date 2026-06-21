@@ -775,9 +775,9 @@ const StaffUI = () => {
   }
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header">
-        <h1 className="dashboard-title">TIDC 2026 Staff Dashboard</h1>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#faf5ff' }}>
+      <div className="dashboard-header" style={{ width: '100%', margin: 0, padding: '1rem 2rem', position: 'sticky', top: 0, zIndex: 50, background: 'white', borderBottom: '1px solid #e9d5ff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1 className="dashboard-title" style={{ margin: 0, fontSize: '1.5rem' }}>TIDC 2026 Staff Dashboard</h1>
         <div className="dashboard-actions">
           {activeTab === 'registrations' && (
             <button className="btn-primary" onClick={exportToCSV} disabled={sortedAndFilteredRegistrations.length === 0}>
@@ -823,101 +823,117 @@ const StaffUI = () => {
         </div>
       </div>
 
-      <div style={{ display: 'flex', borderBottom: '2px solid #e9d5ff', marginBottom: '2rem', gap: '1.5rem', flexWrap: 'wrap' }}>
-        <button
-          onClick={() => {
-            setActiveTab('registrations');
-            setUploadSuccess(false);
-            setUploadError('');
-            setSettingsSuccess(false);
-            setSettingsError('');
-            handleCancelEdit();
-          }}
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: '1rem 0.5rem',
-            fontSize: '1.05rem',
-            fontWeight: 600,
-            color: activeTab === 'registrations' ? '#9333ea' : '#6b21a8',
-            borderBottom: activeTab === 'registrations' ? '3px solid #9333ea' : '3px solid transparent',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            marginBottom: '-2px'
-          }}
-        >
-          📋 Registrations ({registrations.length})
-        </button>
-        <button
-          onClick={() => {
-            setActiveTab('results');
-            setUploadSuccess(false);
-            setUploadError('');
-            setSettingsSuccess(false);
-            setSettingsError('');
-            handleCancelEdit();
-          }}
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: '1rem 0.5rem',
-            fontSize: '1.05rem',
-            fontWeight: 600,
-            color: activeTab === 'results' ? '#9333ea' : '#6b21a8',
-            borderBottom: activeTab === 'results' ? '3px solid #9333ea' : '3px solid transparent',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            marginBottom: '-2px'
-          }}
-        >
-          🏆 Manage Results ({results.length})
-        </button>
-        <button 
-          className="tab-btn" 
-          onClick={() => setActiveTab('polls')}
-          style={{
-            flex: 1,
-            padding: '1rem',
-            background: 'none',
-            border: 'none',
-            fontSize: '1rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            color: activeTab === 'polls' ? '#9333ea' : '#6b21a8',
-            borderBottom: activeTab === 'polls' ? '3px solid #9333ea' : '3px solid transparent',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem'
-          }}
-        >
-          📊 Live Polls
-        </button>
+      <div style={{ display: 'flex', flex: 1 }}>
+        {/* Left Sidebar */}
+        <div style={{ width: '260px', background: 'white', borderRight: '1px solid #e9d5ff', display: 'flex', flexDirection: 'column', position: 'sticky', top: '73px', height: 'calc(100vh - 73px)', padding: '1rem 0' }}>
+          
+          <div style={{ padding: '0 1.5rem', marginBottom: '1rem', fontSize: '0.75rem', fontWeight: 800, color: '#a855f7', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            Main Menu
+          </div>
 
-        <button 
-          className="tab-btn" 
-          onClick={() => setActiveTab('settings')}
-          style={{
-            flex: 1,
-            padding: '1rem',
-            background: 'none',
-            border: 'none',
-            fontSize: '1rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            color: activeTab === 'settings' ? '#9333ea' : '#6b21a8',
-            borderBottom: activeTab === 'settings' ? '3px solid #9333ea' : '3px solid transparent',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem'
-          }}
-        >
-          ⚙️ Settings
-        </button>
-      </div>
+          <button
+            onClick={() => {
+              setActiveTab('registrations');
+              setUploadSuccess(false);
+              setUploadError('');
+              setSettingsSuccess(false);
+              setSettingsError('');
+              handleCancelEdit();
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              padding: '1rem 1.5rem',
+              background: activeTab === 'registrations' ? '#faf5ff' : 'transparent',
+              border: 'none',
+              borderRight: activeTab === 'registrations' ? '4px solid #9333ea' : '4px solid transparent',
+              color: activeTab === 'registrations' ? '#7e22ce' : '#6b21a8',
+              fontWeight: activeTab === 'registrations' ? 700 : 500,
+              fontSize: '1rem',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all 0.2s',
+            }}
+          >
+            <span style={{ fontSize: '1.2rem' }}>📋</span> Registrations
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('results');
+              setUploadSuccess(false);
+              setUploadError('');
+              setSettingsSuccess(false);
+              setSettingsError('');
+              handleCancelEdit();
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              padding: '1rem 1.5rem',
+              background: activeTab === 'results' ? '#faf5ff' : 'transparent',
+              border: 'none',
+              borderRight: activeTab === 'results' ? '4px solid #9333ea' : '4px solid transparent',
+              color: activeTab === 'results' ? '#7e22ce' : '#6b21a8',
+              fontWeight: activeTab === 'results' ? 700 : 500,
+              fontSize: '1rem',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all 0.2s',
+            }}
+          >
+            <span style={{ fontSize: '1.2rem' }}>🏆</span> Manage Results
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('polls')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              padding: '1rem 1.5rem',
+              background: activeTab === 'polls' ? '#faf5ff' : 'transparent',
+              border: 'none',
+              borderRight: activeTab === 'polls' ? '4px solid #9333ea' : '4px solid transparent',
+              color: activeTab === 'polls' ? '#7e22ce' : '#6b21a8',
+              fontWeight: activeTab === 'polls' ? 700 : 500,
+              fontSize: '1rem',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all 0.2s',
+            }}
+          >
+            <span style={{ fontSize: '1.2rem' }}>📊</span> Live Polls
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('settings')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              padding: '1rem 1.5rem',
+              background: activeTab === 'settings' ? '#faf5ff' : 'transparent',
+              border: 'none',
+              borderRight: activeTab === 'settings' ? '4px solid #9333ea' : '4px solid transparent',
+              color: activeTab === 'settings' ? '#7e22ce' : '#6b21a8',
+              fontWeight: activeTab === 'settings' ? 700 : 500,
+              fontSize: '1rem',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all 0.2s',
+            }}
+          >
+            <span style={{ fontSize: '1.2rem' }}>⚙️</span> Settings
+          </button>
+        </div>
+
+        {/* Main Content Area */}
+        <div style={{ flex: 1, padding: '2rem', maxWidth: 'calc(100vw - 260px)', overflowX: 'hidden' }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+
 
       {activeTab === 'registrations' && (
         <>
@@ -1636,32 +1652,38 @@ const StaffUI = () => {
               {finalCategories.map(cat => {
                 const isActive = activePollCategories.includes(cat);
                 return (
-                  <div key={cat} style={{ background: isActive ? '#ecfdf5' : '#faf5ff', padding: '1rem', borderRadius: '8px', border: isActive ? '2px solid #10b981' : '1px solid #e9d5ff', transition: 'all 0.2s' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                      <h4 style={{ margin: 0, color: isActive ? '#065f46' : '#4c1d95', fontSize: '1.1rem' }}>{cat}</h4>
+                  <div key={cat} style={{ background: isActive ? '#ecfdf5' : '#faf5ff', padding: '1.5rem', borderRadius: '12px', border: isActive ? '2px solid #10b981' : '1px solid #e9d5ff', transition: 'all 0.2s' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                      <h4 style={{ margin: 0, color: isActive ? '#065f46' : '#4c1d95', fontSize: '1.2rem' }}>{cat}</h4>
                       <button
                         onClick={() => toggleCategoryPoll(cat)}
                         className={isActive ? "btn-danger" : "btn-success"}
-                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', fontWeight: 600, background: isActive ? '#fee2e2' : '#ecfdf5', color: isActive ? '#b91c1c' : '#047857', border: `1px solid ${isActive ? '#fca5a5' : '#a7f3d0'}`, borderRadius: '6px', cursor: 'pointer' }}
+                        style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', fontWeight: 600, background: isActive ? '#fee2e2' : '#ecfdf5', color: isActive ? '#b91c1c' : '#047857', border: `1px solid ${isActive ? '#fca5a5' : '#a7f3d0'}`, borderRadius: '6px', cursor: 'pointer' }}
                       >
                         {isActive ? 'Turn OFF' : 'Turn ON'}
                       </button>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      {finalByCategory[cat].map((res: any) => (
-                        <label key={res.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', background: '#fff', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #f3e8ff', opacity: res.in_poll ? 1 : 0.6 }}>
-                          <input 
-                            type="checkbox" 
-                            checked={res.in_poll || false} 
-                            onChange={() => togglePoll(res)} 
-                            style={{ width: '16px', height: '16px', accentColor: '#9333ea' }}
-                          />
-                          <span style={{ fontSize: '0.9rem', fontWeight: res.in_poll ? 600 : 400, color: '#3b0764' }}>{res.student_name}</span>
-                          <span style={{ fontSize: '0.75rem', color: '#6b21a8', marginLeft: 'auto' }}>{res.bace}</span>
-                        </label>
-                      ))}
-                    </div>
+                    <details style={{ background: '#fff', borderRadius: '8px', border: '1px solid #e9d5ff', overflow: 'hidden' }}>
+                      <summary style={{ padding: '0.75rem 1rem', cursor: 'pointer', fontWeight: 600, color: '#6b21a8', outline: 'none', listStyle: 'none', display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Manage Contestants</span>
+                        <span>▼</span>
+                      </summary>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem', borderTop: '1px solid #f3e8ff', background: '#faf5ff' }}>
+                        {finalByCategory[cat].map((res: any) => (
+                          <label key={res.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', background: '#fff', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #f3e8ff', opacity: res.in_poll ? 1 : 0.6 }}>
+                            <input 
+                              type="checkbox" 
+                              checked={res.in_poll || false} 
+                              onChange={() => togglePoll(res)} 
+                              style={{ width: '18px', height: '18px', accentColor: '#9333ea', cursor: 'pointer' }}
+                            />
+                            <span style={{ fontSize: '1rem', fontWeight: res.in_poll ? 600 : 400, color: '#3b0764' }}>{res.student_name}</span>
+                            <span style={{ fontSize: '0.8rem', color: '#6b21a8', marginLeft: 'auto' }}>{res.bace}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </details>
                   </div>
                 );
               })}
@@ -1943,6 +1965,9 @@ const StaffUI = () => {
           </div>
         </div>
       )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
