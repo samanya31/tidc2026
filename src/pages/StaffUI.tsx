@@ -498,9 +498,6 @@ const StaffUI = () => {
     try {
       const { data, error } = await supabase
         .from('tidc_settings')
-        .select('value')
-        .eq('key', 'registration_deadline')
-        .single();
         .select('key, value');
       if (error) throw error;
       
@@ -538,7 +535,7 @@ const StaffUI = () => {
     }
   };
 
-  const handleSettingsSubmit = async (e: React.FormEvent) => {
+  const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setSettingsLoading(true);
     setSettingsSuccess(false);
@@ -1711,6 +1708,7 @@ const StaffUI = () => {
               ))}
             </div>
           )}
+          </div>
         </div>
       )}
 
