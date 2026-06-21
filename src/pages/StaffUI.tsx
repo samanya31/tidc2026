@@ -61,9 +61,13 @@ const StaffUI = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [dataError, setDataError] = useState('');
 
-  const [activeTab, setActiveTab] = useState<'registrations' | 'results' | 'settings'>('registrations');
+  const [activeTab, setActiveTab] = useState<'registrations' | 'results' | 'settings' | 'polls'>('registrations');
   const [results, setResults] = useState<any[]>([]);
   const [resultsLoading, setResultsLoading] = useState(false);
+
+  // Polls state
+  const [pollVotes, setPollVotes] = useState<Record<string, Record<string, number>>>({});
+  const [pollsLoading, setPollsLoading] = useState(false);
 
   // Results form state
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -130,6 +134,7 @@ const StaffUI = () => {
       fetchRegistrations();
       fetchResults();
       fetchSettings();
+      fetchPolls();
     }
   }, [session]);
 
@@ -182,9 +187,46 @@ const StaffUI = () => {
       if (error) throw error;
       setResults(data || []);
     } catch (err: any) {
-      console.error(err);
+      console.error('Error fetching results:', err.message);
     } finally {
       setResultsLoading(false);
+    }
+  };
+
+  const fetchPolls = async () => {
+    setPollsLoading(true);
+    try {
+      const { data, error } = await supabase.from('tidc_votes').select('category, candidate_name');
+      if (error) throw error;
+      
+      const counts: Record<string, Record<string, number>> = {};
+      (data || []).forEach(vote => {
+        if (!counts[vote.category]) counts[vote.category] = {};
+        counts[vote.category][vote.candidate_name] = (counts[vote.category][vote.candidate_name] || 0) + 1;
+      });
+      setPollVotes(counts);
+    } catch (err: any) {
+      console.error('Error fetching polls:', err.message);
+    } finally {
+      setPollsLoading(false);
+    }
+  };
+
+  const togglePoll = async (res: any) => {
+    try {
+      const newStatus = !res.in_poll;
+      const { error } = await supabase
+        .from('tidc_results')
+        .update({ in_poll: newStatus })
+        .eq('id', res.id);
+        
+      if (error) throw error;
+      
+      // Update local state
+      setResults(prev => prev.map(r => r.id === res.id ? { ...r, in_poll: newStatus } : r));
+    } catch (err: any) {
+      console.error('Error toggling poll status:', err.message);
+      alert('Failed to update poll status');
     }
   };
 
@@ -805,27 +847,47 @@ const StaffUI = () => {
         >
           🏆 Manage Results ({results.length})
         </button>
-        <button
-          onClick={() => {
-            setActiveTab('settings');
-            setUploadSuccess(false);
-            setUploadError('');
-            setSettingsSuccess(false);
-            setSettingsError('');
-            handleCancelEdit();
-            fetchSettings();
-          }}
+        <button 
+          className="tab-btn" 
+          onClick={() => setActiveTab('polls')}
           style={{
+            flex: 1,
+            padding: '1rem',
             background: 'none',
             border: 'none',
-            padding: '1rem 0.5rem',
-            fontSize: '1.05rem',
+            fontSize: '1rem',
             fontWeight: 600,
-            color: activeTab === 'settings' ? '#9333ea' : '#6b21a8',
-            borderBottom: activeTab === 'settings' ? '3px solid #9333ea' : '3px solid transparent',
             cursor: 'pointer',
             transition: 'all 0.2s',
-            marginBottom: '-2px'
+            color: activeTab === 'polls' ? '#9333ea' : '#6b21a8',
+            borderBottom: activeTab === 'polls' ? '3px solid #9333ea' : '3px solid transparent',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem'
+          }}
+        >
+          📊 Live Polls
+        </button>
+
+        <button 
+          className="tab-btn" 
+          onClick={() => setActiveTab('settings')}
+          style={{
+            flex: 1,
+            padding: '1rem',
+            background: 'none',
+            border: 'none',
+            fontSize: '1rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            color: activeTab === 'settings' ? '#9333ea' : '#6b21a8',
+            borderBottom: activeTab === 'settings' ? '3px solid #9333ea' : '3px solid transparent',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem'
           }}
         >
           ⚙️ Settings
@@ -1289,19 +1351,20 @@ const StaffUI = () => {
                       <th>Marks</th>
                       <th>Round 2 Status</th>
                       <th>Score Card</th>
+                      <th style={{ width: '90px', textAlign: 'center' }}>Poll</th>
                       <th>Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {resultsLoading && finalResultsList.length === 0 ? (
                       <tr>
-                        <td colSpan={8} style={{ textAlign: 'center', padding: '2rem', color: '#78350f' }}>
+                        <td colSpan={9} style={{ textAlign: 'center', padding: '2rem', color: '#78350f' }}>
                           Loading results...
                         </td>
                       </tr>
                     ) : finalResultsList.length === 0 ? (
                       <tr>
-                        <td colSpan={8} style={{ textAlign: 'center', padding: '2rem', color: '#78350f' }}>
+                        <td colSpan={9} style={{ textAlign: 'center', padding: '2rem', color: '#78350f' }}>
                           No Round 2 results published yet.
                         </td>
                       </tr>
@@ -1309,7 +1372,7 @@ const StaffUI = () => {
                       finalCategories.map((cat) => (
                         <React.Fragment key={cat}>
                           <tr style={{ background: '#fffbeb' }}>
-                            <td colSpan={8} style={{ fontWeight: 700, color: '#78350f', padding: '0.5rem 1rem', fontSize: '0.8rem' }}>
+                            <td colSpan={9} style={{ fontWeight: 700, color: '#78350f', padding: '0.5rem 1rem', fontSize: '0.8rem' }}>
                               📁 {cat} ({finalByCategory[cat].length})
                             </td>
                           </tr>
@@ -1338,8 +1401,18 @@ const StaffUI = () => {
                                       Score Card
                                     </a>
                                   ) : (
-                                    <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>N/A</span>
+                                    <span style={{ color: '#9ca3af', fontSize: '0.85rem', fontStyle: 'italic' }}>None</span>
                                   )}
+                                </td>
+                                <td style={{ textAlign: 'center' }}>
+                                  <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                    <input 
+                                      type="checkbox" 
+                                      checked={res.in_poll || false} 
+                                      onChange={() => togglePoll(res)} 
+                                      style={{ width: '18px', height: '18px', accentColor: '#9333ea' }}
+                                    />
+                                  </label>
                                 </td>
                                 <td style={{ whiteSpace: 'nowrap' }}>
                                   <button
@@ -1532,6 +1605,55 @@ const StaffUI = () => {
         )}
       </div>
     )}
+
+      {activeTab === 'polls' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', margin: 0 }}>📊 Live Poll Results</h2>
+            <button className="btn-outline" onClick={fetchPolls} disabled={pollsLoading}>
+              <RefreshCw size={18} className={pollsLoading ? "animate-spin" : ""} />
+              Refresh Polls
+            </button>
+          </div>
+
+          {pollsLoading ? (
+            <div style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>Loading live polls...</div>
+          ) : Object.keys(pollVotes).length === 0 ? (
+            <div className="field-card" style={{ textAlign: 'center', padding: '4rem 0', color: '#6b21a8', fontStyle: 'italic' }}>
+              No votes have been cast yet.
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
+              {Object.keys(pollVotes).sort().map(category => (
+                <div key={category} className="field-card" style={{ margin: 0, borderTop: '4px solid #9333ea' }}>
+                  <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.2rem', fontWeight: 700, margin: '0 0 1rem 0', borderBottom: '1px solid #f3e8ff', paddingBottom: '0.5rem' }}>
+                    {category}
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    {Object.entries(pollVotes[category])
+                      .sort((a, b) => b[1] - a[1]) // sort by votes descending
+                      .map(([candidate, votes]) => {
+                        const maxVotes = Math.max(...Object.values(pollVotes[category]));
+                        const percentage = maxVotes > 0 ? (votes / maxVotes) * 100 : 0;
+                        return (
+                          <div key={candidate}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem', fontSize: '0.9rem', fontWeight: 600 }}>
+                              <span style={{ color: '#4c1d95' }}>{candidate}</span>
+                              <span style={{ color: '#d97706' }}>{votes} vote{votes !== 1 ? 's' : ''}</span>
+                            </div>
+                            <div style={{ width: '100%', background: '#f3e8ff', borderRadius: '4px', height: '8px', overflow: 'hidden' }}>
+                              <div style={{ width: `${percentage}%`, background: '#9333ea', height: '100%', transition: 'width 0.5s ease' }}></div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {activeTab === 'settings' && (
         <div style={{ maxWidth: '500px', margin: '0 auto' }}>
