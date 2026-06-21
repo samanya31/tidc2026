@@ -68,6 +68,7 @@ const StaffUI = () => {
   // Polls state
   const [pollVotes, setPollVotes] = useState<Record<string, Record<string, number>>>({});
   const [pollsLoading, setPollsLoading] = useState(false);
+  const [activePollCategories, setActivePollCategories] = useState<string[]>([]);
 
   // Results form state
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -500,17 +501,44 @@ const StaffUI = () => {
         .select('value')
         .eq('key', 'registration_deadline')
         .single();
+        .select('key, value');
       if (error) throw error;
-      if (data && data.value) {
-        const formatted = data.value.substring(0, 16);
+      
+      const deadlineSetting = data?.find(s => s.key === 'registration_deadline');
+      if (deadlineSetting && deadlineSetting.value) {
+        const formatted = deadlineSetting.value.substring(0, 16);
         setSettingsDeadline(formatted);
       }
-    } catch (err) {
-      console.error('Failed to load settings:', err);
+      const activePollsSetting = data?.find(s => s.key === 'active_polls');
+      if (activePollsSetting) {
+        try {
+          setActivePollCategories(JSON.parse(activePollsSetting.value));
+        } catch(e) {}
+      }
+    } catch (err: any) {
+      console.error('Error fetching settings:', err.message);
     }
   };
 
-  const handleSaveSettings = async (e: React.FormEvent) => {
+  const toggleCategoryPoll = async (category: string) => {
+    try {
+      const newActive = activePollCategories.includes(category)
+        ? activePollCategories.filter(c => c !== category)
+        : [...activePollCategories, category];
+
+      const { error } = await supabase
+        .from('tidc_settings')
+        .upsert({ key: 'active_polls', value: JSON.stringify(newActive) }, { onConflict: 'key' });
+
+      if (error) throw error;
+      setActivePollCategories(newActive);
+    } catch (err: any) {
+      console.error('Error toggling category poll:', err.message);
+      alert('Failed to update poll active status');
+    }
+  };
+
+  const handleSettingsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSettingsLoading(true);
     setSettingsSuccess(false);
@@ -1608,17 +1636,48 @@ const StaffUI = () => {
 
       {activeTab === 'polls' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', margin: 0 }}>📊 Live Poll Results</h2>
-            <button className="btn-outline" onClick={fetchPolls} disabled={pollsLoading}>
-              <RefreshCw size={18} className={pollsLoading ? "animate-spin" : ""} />
-              Refresh Polls
-            </button>
+          
+          {/* Poll Control Center */}
+          <div className="field-card" style={{ margin: 0 }}>
+            <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.4rem', fontWeight: 700, margin: '0 0 1rem 0' }}>
+              🎯 Poll Control Center
+            </h3>
+            <p style={{ color: '#6b21a8', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+              Turn polls ON and OFF for specific categories. Only active categories will appear on the public voting page.
+            </p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {finalCategories.map(cat => {
+                const isActive = activePollCategories.includes(cat);
+                return (
+                  <div key={cat} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: isActive ? '#ecfdf5' : '#faf5ff', padding: '1rem', borderRadius: '8px', border: isActive ? '2px solid #10b981' : '1px solid #e9d5ff', transition: 'all 0.2s' }}>
+                    <h4 style={{ margin: 0, color: isActive ? '#065f46' : '#4c1d95', fontSize: '1.1rem' }}>{cat}</h4>
+                    <button
+                      onClick={() => toggleCategoryPoll(cat)}
+                      className={isActive ? "btn-danger" : "btn-success"}
+                      style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', fontWeight: 600, background: isActive ? '#fee2e2' : '#ecfdf5', color: isActive ? '#b91c1c' : '#047857', border: `1px solid ${isActive ? '#fca5a5' : '#a7f3d0'}`, borderRadius: '6px', cursor: 'pointer' }}
+                    >
+                      {isActive ? 'Turn OFF' : 'Turn ON'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
-          {pollsLoading ? (
-            <div style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>Loading live polls...</div>
-          ) : Object.keys(pollVotes).length === 0 ? (
+          {/* Live Poll Results */}
+          <div className="field-card" style={{ margin: 0 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.4rem', fontWeight: 700, margin: 0 }}>📊 Live Poll Results</h3>
+              <button className="btn-outline" onClick={fetchPolls} disabled={pollsLoading}>
+                <RefreshCw size={18} className={pollsLoading ? "animate-spin" : ""} />
+                Refresh Polls
+              </button>
+            </div>
+
+            {pollsLoading ? (
+              <div style={{ textAlign: 'center', padding: '3rem', color: '#6b21a8' }}>Loading live polls...</div>
+            ) : Object.keys(pollVotes).length === 0 ? (
             <div className="field-card" style={{ textAlign: 'center', padding: '4rem 0', color: '#6b21a8', fontStyle: 'italic' }}>
               No votes have been cast yet.
             </div>

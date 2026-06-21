@@ -14,6 +14,7 @@ interface PollCandidate {
 const Poll = () => {
   const navigate = useNavigate();
   const [candidates, setCandidates] = useState<PollCandidate[]>([]);
+  const [activePolls, setActivePolls] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [votingFor, setVotingFor] = useState<number | null>(null);
   
@@ -37,6 +38,22 @@ const Poll = () => {
   const fetchCandidates = async () => {
     setLoading(true);
     try {
+      // Fetch active polls setting
+      const { data: settingsData } = await supabase
+        .from('tidc_settings')
+        .select('value')
+        .eq('key', 'active_polls')
+        .single();
+        
+      let activeCategories: string[] = [];
+      if (settingsData && settingsData.value) {
+        try {
+          activeCategories = JSON.parse(settingsData.value);
+        } catch(e) {}
+      }
+      setActivePolls(activeCategories);
+
+      // Fetch candidates
       const { data, error } = await supabase
         .from('tidc_results')
         .select('id, student_name, category, bace')
@@ -79,10 +96,12 @@ const Poll = () => {
     }
   };
 
-  // Group by category
+  // Group by category, but only include active categories
   const groupedByCategory = candidates.reduce((acc, current) => {
-    if (!acc[current.category]) acc[current.category] = [];
-    acc[current.category].push(current);
+    if (activePolls.includes(current.category)) {
+      if (!acc[current.category]) acc[current.category] = [];
+      acc[current.category].push(current);
+    }
     return acc;
   }, {} as Record<string, PollCandidate[]>);
 
