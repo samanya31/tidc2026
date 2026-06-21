@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import bannerImg from '../assets/DN_TIDC.png';
 import { CheckCircle2 } from 'lucide-react';
+import Confetti from 'react-confetti';
 
 interface PollCandidate {
   id: number;
@@ -18,6 +19,15 @@ const Poll = () => {
   
   // Track voted candidates from localStorage
   const [votedCategories, setVotedCategories] = useState<Record<string, string>>({});
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  useEffect(() => {
+    // Make the body background golden for the Poll page
+    document.body.style.background = 'linear-gradient(160deg, #fffbeb 0%, #fef3c7 50%, #fde68a 100%)';
+    return () => {
+      document.body.style.background = ''; // Revert to global index.css default
+    };
+  }, []);
 
   useEffect(() => {
     fetchCandidates();
@@ -86,6 +96,10 @@ const Poll = () => {
       localStorage.setItem(`tidc_voted_${candidate.category}`, candidate.student_name);
       setVotedCategories(prev => ({ ...prev, [candidate.category]: candidate.student_name }));
       
+      // Trigger yayyyy celebration!
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 5000);
+      
     } catch (err) {
       console.error('Error casting vote:', err);
       alert('Failed to cast vote. Please try again.');
@@ -107,18 +121,19 @@ const Poll = () => {
 
   return (
     <>
+      {showConfetti && <Confetti style={{ zIndex: 9999 }} recycle={false} numberOfPieces={500} gravity={0.15} />}
       <div className="results-bg">
         <img src={bannerImg} alt="DN.TIDC Background" />
-        <div className="results-bg-overlay" />
+        <div className="poll-bg-overlay" />
       </div>
 
       <div className="form-body results-content" style={{ marginTop: '0', paddingTop: '2rem', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', maxWidth: '800px', position: 'relative', zIndex: 1 }}>
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <div style={{ fontSize: '3rem', marginBottom: '0.5rem', animation: 'bounce 2s infinite' }}>🗳️</div>
-          <h1 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '2.4rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+          <h1 style={{ fontFamily: 'Playfair Display, serif', color: '#78350f', fontSize: '2.4rem', fontWeight: 700, marginBottom: '0.5rem' }}>
             Audience Poll
           </h1>
-          <p style={{ color: '#6b21a8', fontSize: '1.05rem', maxWidth: '600px', margin: '0 auto' }}>
+          <p style={{ color: '#92400e', fontSize: '1.05rem', maxWidth: '600px', margin: '0 auto' }}>
             Vote for your favorite participants! You can cast <strong>one vote per category</strong>.
           </p>
         </div>
@@ -136,9 +151,9 @@ const Poll = () => {
             {categories.map(category => {
               const hasVoted = votedCategories[category];
               return (
-                <div key={category} className="field-card" style={{ padding: '1.5rem', borderTop: '4px solid #9333ea' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #f3e8ff', paddingBottom: '1rem' }}>
-                    <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#3b0764', fontSize: '1.4rem', fontWeight: 700, margin: 0 }}>
+                <div key={category} className="field-card" style={{ padding: '1.5rem', borderTop: '4px solid #f59e0b' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #fde68a', paddingBottom: '1rem' }}>
+                    <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#78350f', fontSize: '1.4rem', fontWeight: 700, margin: 0 }}>
                       {category}
                     </h2>
                     {hasVoted && (
