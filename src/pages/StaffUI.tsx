@@ -1376,7 +1376,6 @@ const StaffUI = () => {
                       <th>Marks</th>
                       <th>Round 2 Status</th>
                       <th>Score Card</th>
-                      <th style={{ width: '90px', textAlign: 'center' }}>Poll</th>
                       <th>Action</th>
                     </tr>
                   </thead>
@@ -1428,16 +1427,6 @@ const StaffUI = () => {
                                   ) : (
                                     <span style={{ color: '#9ca3af', fontSize: '0.85rem', fontStyle: 'italic' }}>None</span>
                                   )}
-                                </td>
-                                <td style={{ textAlign: 'center' }}>
-                                  <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                                    <input 
-                                      type="checkbox" 
-                                      checked={res.in_poll || false} 
-                                      onChange={() => togglePoll(res)} 
-                                      style={{ width: '18px', height: '18px', accentColor: '#9333ea' }}
-                                    />
-                                  </label>
                                 </td>
                                 <td style={{ whiteSpace: 'nowrap' }}>
                                   <button
@@ -1643,19 +1632,36 @@ const StaffUI = () => {
               Turn polls ON and OFF for specific categories. Only active categories will appear on the public voting page.
             </p>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
               {finalCategories.map(cat => {
                 const isActive = activePollCategories.includes(cat);
                 return (
-                  <div key={cat} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: isActive ? '#ecfdf5' : '#faf5ff', padding: '1rem', borderRadius: '8px', border: isActive ? '2px solid #10b981' : '1px solid #e9d5ff', transition: 'all 0.2s' }}>
-                    <h4 style={{ margin: 0, color: isActive ? '#065f46' : '#4c1d95', fontSize: '1.1rem' }}>{cat}</h4>
-                    <button
-                      onClick={() => toggleCategoryPoll(cat)}
-                      className={isActive ? "btn-danger" : "btn-success"}
-                      style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', fontWeight: 600, background: isActive ? '#fee2e2' : '#ecfdf5', color: isActive ? '#b91c1c' : '#047857', border: `1px solid ${isActive ? '#fca5a5' : '#a7f3d0'}`, borderRadius: '6px', cursor: 'pointer' }}
-                    >
-                      {isActive ? 'Turn OFF' : 'Turn ON'}
-                    </button>
+                  <div key={cat} style={{ background: isActive ? '#ecfdf5' : '#faf5ff', padding: '1rem', borderRadius: '8px', border: isActive ? '2px solid #10b981' : '1px solid #e9d5ff', transition: 'all 0.2s' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                      <h4 style={{ margin: 0, color: isActive ? '#065f46' : '#4c1d95', fontSize: '1.1rem' }}>{cat}</h4>
+                      <button
+                        onClick={() => toggleCategoryPoll(cat)}
+                        className={isActive ? "btn-danger" : "btn-success"}
+                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', fontWeight: 600, background: isActive ? '#fee2e2' : '#ecfdf5', color: isActive ? '#b91c1c' : '#047857', border: `1px solid ${isActive ? '#fca5a5' : '#a7f3d0'}`, borderRadius: '6px', cursor: 'pointer' }}
+                      >
+                        {isActive ? 'Turn OFF' : 'Turn ON'}
+                      </button>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {finalByCategory[cat].map((res: any) => (
+                        <label key={res.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', background: '#fff', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #f3e8ff', opacity: res.in_poll ? 1 : 0.6 }}>
+                          <input 
+                            type="checkbox" 
+                            checked={res.in_poll || false} 
+                            onChange={() => togglePoll(res)} 
+                            style={{ width: '16px', height: '16px', accentColor: '#9333ea' }}
+                          />
+                          <span style={{ fontSize: '0.9rem', fontWeight: res.in_poll ? 600 : 400, color: '#3b0764' }}>{res.student_name}</span>
+                          <span style={{ fontSize: '0.75rem', color: '#6b21a8', marginLeft: 'auto' }}>{res.bace}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 );
               })}
